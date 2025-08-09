@@ -2,8 +2,6 @@
 import Image from "next/image";
 import { User2, ShieldCheck, BadgeCheck, Shield } from "lucide-react";
 import Link from "next/link";
-import { BookingCTA } from "../BookingCTA";
-import { Button } from "../ui/moving-border";
 
 
 const icono = [

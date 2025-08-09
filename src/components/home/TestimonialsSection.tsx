@@ -1,5 +1,3 @@
-import Image from "next/image";
-import { CalendarCheck, Bed, TrendingUp, Quote } from "lucide-react";
 import { AnimatedTestimonials } from "../ui/animated-testimonials";
 import Stars from "../Stars";
 
