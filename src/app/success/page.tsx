@@ -9,8 +9,9 @@ export const metadata: Metadata = {
     description: "Tu reserva fue confirmada correctamente.",
 };
 
-type SP = Record<string, string | string[] | undefined>;
-const qp = (sp: SP, k: string) => (Array.isArray(sp[k]) ? sp[k]?.[0] : sp[k]) ?? "";
+type SearchParams = Record<string, string | string[] | undefined>;
+const qp = (sp: SearchParams, k: string) =>
+    (Array.isArray(sp[k]) ? sp[k]?.[0] : sp[k]) ?? "";
 
 function parseDateSafe(s: string | undefined) {
     if (!s) return null;
@@ -23,14 +24,15 @@ function toICSDate(dt: Date) {
     return dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
-export default function SuccessPage({ searchParams }: { searchParams: SP }) {
+export default async function SuccessPage({ searchParams }: { searchParams: Promise<SearchParams>; }) {
+    const sp = await searchParams;
     // Query params que puedes pasar en tu success_url:
     // ?session_id={CHECKOUT_SESSION_ID}&svc=Masaje%2060&dt=2025-08-12T18:00:00Z&dur=60&loc=Tampa%2C%20FL
-    const sessionId = qp(searchParams, "session_id");           // opcional (solo mostrar)
-    const service = qp(searchParams, "svc") || "Sesión de masaje";
-    const dtISO = qp(searchParams, "dt");                   // ISO de inicio (recomendado)
-    const durationM = Number(qp(searchParams, "dur") || "60");  // minutos (default 60)
-    const location = qp(searchParams, "loc") || "A domicilio";
+    const sessionId = qp(sp, "session_id");           // opcional (solo mostrar)
+    const service = qp(sp, "svc") || "Sesión de masaje";
+    const dtISO = qp(sp, "dt");                   // ISO de inicio (recomendado)
+    const durationM = Number(qp(sp, "dur") || "60");  // minutos (default 60)
+    const location = qp(sp, "loc") || "A domicilio";
 
     const start = parseDateSafe(dtISO);
     const end = start ? new Date(start.getTime() + durationM * 60_000) : null;
