@@ -34,8 +34,8 @@ export default function ContactForm() {
             if (!res.ok) throw new Error(data?.error || "No se pudo enviar el mensaje.");
             setOk("¡Gracias! Hemos recibido tu mensaje.");
             setState(s => ({ ...s, message: "", date: "", service: "" })); // conserva nombre/email
-        } catch (err: any) {
-            setError(err.message || "Error inesperado.");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Error inesperado.");
         } finally {
             setLoading(false);
         }

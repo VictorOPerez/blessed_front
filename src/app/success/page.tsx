@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { CheckCircle2, CalendarCheck, Clock, MapPin, Home, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "Reserva confirmada | Blessed Massage & Recovery",
@@ -127,13 +128,13 @@ export default function SuccessPage({ searchParams }: { searchParams: SP }) {
                         {/* Botones */}
                         <div className="mt-6 flex flex-wrap gap-3">
                             {icsHref ? (
-                                <a
+                                <Link
                                     href={icsHref}
                                     download="reserva.ics"
                                     className="rounded-2xl px-4 py-2 border border-[#275B59]/30 text-[#275B59] bg-white/70 shadow-sm"
                                 >
                                     Agregar a Calendario
-                                </a>
+                                </Link>
                             ) : (
                                 <button
                                     aria-disabled
@@ -143,18 +144,18 @@ export default function SuccessPage({ searchParams }: { searchParams: SP }) {
                                 </button>
                             )}
 
-                            <a
+                            <Link
                                 href="/"
                                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 bg-[#FF8F7A] text-[#FFF8F2] shadow-sm"
                             >
                                 <Home size={18} /> Inicio
-                            </a>
-                            <a
+                            </Link>
+                            <Link
                                 href="/booking"
                                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 border border-[#275B59]/30 text-[#275B59] bg-white/70 shadow-sm"
                             >
                                 <CalendarCheck size={18} /> Hacer otra reserva
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
