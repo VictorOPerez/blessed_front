@@ -1,7 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import {
+    motion,
+    useScroll,
+    useTransform,
+    useReducedMotion,
+    type MotionValue,
+} from "framer-motion";
 import Image from "next/image";
 
 export type ParallaxImage = {
@@ -20,13 +26,30 @@ export type ThreeStackParallaxProps = {
     radiusClass?: string;
 };
 
+/** Custom hook: del centro (0) → hacia afuera (to) a partir de START */
+function useFromCenter(
+    scrollYProgress: MotionValue<number>,
+    prefersReduced: boolean,
+    to: number,
+    START = 0.45
+): MotionValue<number> {
+    return useTransform(
+        scrollYProgress,
+        [0, START, 1],
+        prefersReduced ? [0, 0, 0] : [0, 0, to]
+    );
+}
+
+type CardStyle = { x?: MotionValue<number> };
+
 export default function ThreeStackParallax({
     images,
     offsets = { left: 18, right: 18, bottom: 22 },
     className = "",
     radiusClass = "rounded-2xl",
 }: ThreeStackParallaxProps) {
-    const prefersReduced = useReducedMotion();
+    const prefersReduced = useReducedMotion() ?? false;
+
     const ref = useRef<HTMLDivElement | null>(null);
 
     const { scrollYProgress } = useScroll({
@@ -34,25 +57,10 @@ export default function ThreeStackParallax({
         offset: ["start 90%", "end 10%"],
     });
 
-    // Punto donde ya quedan lado a lado (0..1). Ajusta 0.45–0.55 a tu gusto.
-    // Empieza la animación cuando ya están lado a lado.
-    // Sube o baja este número (0..1) según cuándo quieres que arranque.
-    const START = 0.45;
-
-    // Helper: del centro (0) → hacia afuera (to)
-    const fromCenter = (to: number) =>
-        useTransform(
-            scrollYProgress,
-            [0, START, 1],
-            prefersReduced ? [0, 0, 0] : [0, 0, to]
-        );
-
-    // Direcciones: izquierda negativa, derecha positiva.
-    // Cambia el signo si quieres que alguna salga hacia el otro lado.
-    const xLeft = fromCenter(- (offsets.left ?? 18)); // arriba-izq sale a la IZQ
-    const xRight = fromCenter((offsets.right ?? 18)); // arriba-der sale a la DER
-    const xBottom = fromCenter((offsets.bottom ?? 22)); // abajo-centro → derecha (pon - para izquierda)
-
+    // Direcciones: izq negativa, der positiva
+    const xLeft = useFromCenter(scrollYProgress, prefersReduced, -(offsets.left ?? 18));
+    const xRight = useFromCenter(scrollYProgress, prefersReduced, +(offsets.right ?? 18));
+    const xBottom = useFromCenter(scrollYProgress, prefersReduced, +(offsets.bottom ?? 22));
 
     // Tamaños de las tarjetas (cuadradas y consistentes)
     const tileW = "w-[224px] sm:w-[256px] lg:w-[220px]";
@@ -63,7 +71,7 @@ export default function ThreeStackParallax({
         extra = "",
     }: {
         img: ParallaxImage;
-        style: any;
+        style: CardStyle;
         extra?: string;
     }) => (
         <motion.div
@@ -87,8 +95,7 @@ export default function ThreeStackParallax({
             ref={ref}
             className={
                 "mx-auto select-none " +
-                // contenedor ancho justo para 2 tarjetas + gap
-                "max-w-[496px] sm:max-w-[544px] lg:max-w-[496px] " +
+                "max-w-[496px] sm:max-w-[544px] lg:max-w-[496px] " + // 2 arriba + gap
                 (className ? ` ${className}` : "")
             }
             aria-label="Galería 2 arriba y 1 abajo (parallax horizontal)"
