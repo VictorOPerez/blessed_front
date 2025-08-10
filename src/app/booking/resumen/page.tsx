@@ -58,6 +58,7 @@ export default function BookingConfirmation() {
                 }
             );
             const payload = await res.json();
+            reset()
             console.log('Backend payload:', payload);
 
             if (!res.ok) {
@@ -71,7 +72,7 @@ export default function BookingConfirmation() {
 
             const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
             await stripe!.redirectToCheckout({ sessionId });
-            reset()
+
         } catch (err) {
             console.error('Error en handleContinue:', err);
             alert('No se pudo iniciar el pago. Inténtalo de nuevo.');
