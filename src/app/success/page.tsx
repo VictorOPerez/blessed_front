@@ -28,7 +28,7 @@ export default async function SuccessPage({ searchParams }: { searchParams: Prom
     const sp = await searchParams;
     // Query params que puedes pasar en tu success_url:
     // ?session_id={CHECKOUT_SESSION_ID}&svc=Masaje%2060&dt=2025-08-12T18:00:00Z&dur=60&loc=Tampa%2C%20FL
-    const sessionId = qp(sp, "session_id");           // opcional (solo mostrar)
+    // opcional (solo mostrar)
     const service = qp(sp, "svc") || "Sesión de masaje";
     const dtISO = qp(sp, "dt");                   // ISO de inicio (recomendado)
     const durationM = Number(qp(sp, "dur") || "60");  // minutos (default 60)
@@ -85,16 +85,6 @@ export default async function SuccessPage({ searchParams }: { searchParams: Prom
                             Tu sesión quedó registrada. Te enviamos un correo con los detalles y el enlace
                             para gestionar o reprogramar si lo necesitas.
                         </p>
-
-                        {sessionId ? (
-                            <p className="mt-3 text-xs text-[#425958]">
-                                ID de sesión:&nbsp;
-                                <span className="font-mono bg-white/60 px-2 py-1 rounded-md">
-                                    {sessionId}
-                                </span>
-                            </p>
-                        ) : null}
-
                         {/* Resumen simple sin fetch */}
                         <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <li className="rounded-2xl bg-white/70 shadow-sm p-4">
