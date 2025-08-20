@@ -1,48 +1,55 @@
 // app/booking/success/page.tsx
 "use client";
 
+import React, { Suspense, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { CheckCircle2, CalendarCheck, Clock, MapPin, Home, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useSearchParams } from "next/navigation";
-
-type SearchParams = Record<string, string | string[] | undefined>;
 
 function qp(sp: URLSearchParams, k: string) {
     return sp.get(k) ?? "";
 }
-
 function parseDateSafe(s?: string | null) {
     if (!s) return null;
     const d = new Date(s);
     return isNaN(d.getTime()) ? null : d;
 }
-
 function toICSDate(dt: Date) {
-    // 2025-08-09T15:30:00.000Z -> 20250809T153000Z
     return dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
 export default function SuccessPage() {
-    const searchParams = useSearchParams(); // ✅ cliente
+    return (
+        <Suspense
+            fallback={
+                <section className="min-h-screen flex items-center justify-center">
+                    <p className="text-gray-600">Cargando detalles…</p>
+                </section>
+            }
+        >
+            <SuccessContent />
+        </Suspense>
+    );
+}
+
+function SuccessContent() {
+    const searchParams = useSearchParams();
     const reset = useBookingStore((s) => s.reset);
 
     useEffect(() => {
-        reset(); // limpiamos una vez que ya regresó de Stripe
+        reset(); // limpia el store al volver de Stripe
     }, [reset]);
 
-    // Lee params desde el hook
     const service = qp(searchParams, "svc") || "Sesión de masaje";
-    const dtISO = qp(searchParams, "dt");                     // ISO inicio
-    const durationM = Number(qp(searchParams, "dur") || "60");  // minutos
+    const dtISO = qp(searchParams, "dt");
+    const durationM = Number(qp(searchParams, "dur") || "60");
     const location = qp(searchParams, "loc") || "A domicilio";
 
     const start = parseDateSafe(dtISO);
     const end = start ? new Date(start.getTime() + (Number.isFinite(durationM) ? durationM : 60) * 60_000) : null;
 
-    // .ics en memoria (usa <a>, no <Link>)
     const icsHref = useMemo(() => {
         if (!start || !end) return undefined;
         const ics = [
@@ -158,7 +165,6 @@ export default function SuccessPage() {
                     {/* Derecha: ilustración */}
                     <div className="lg:col-span-5">
                         <div className="relative rounded-2xl overflow-hidden shadow-md bg-[#FFF3EC]">
-                            {/* contenedor con aspecto */}
                             <div className="aspect-square sm:aspect-[4/4]" />
                             <Image
                                 src="/img/caricatura/top.png"
