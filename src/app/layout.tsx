@@ -1,11 +1,9 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,39 +15,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const playfair = Playfair_Display({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["500", "600", "700"], // usa 600/700 para el wordmark
+  weight: ["500", "600", "700"],
   variable: "--font-brand",
 });
 
 export const metadata: Metadata = {
   title: "Blessed Massage – Masajes Terapéuticos en Tampa",
-  description: "Recupera tu rendimiento, alivia el dolor crónico y optimiza tu activo más valioso: tu tiempo.",
+  description:
+    "Recupera tu rendimiento, alivia el dolor crónico y optimiza tu activo más valioso: tu tiempo.",
   icons: {
-    icon: [{ url: "/favicon.ico?v=3", sizes: "any" }], // cache-bust
+    icon: [{ url: "/favicon.ico?v=3", sizes: "any" }],
     apple: "/apple-touch-icon.png?v=3",
   },
-  manifest: "/site.webmanifest?v=3"
+  manifest: "/site.webmanifest?v=3",
 };
-
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable}  antialiased flex flex-col bg-spa text-spa ${playfair.variable}`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased flex flex-col bg-spa text-spa`}
       >
         <NavBar />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
+        <main className="flex-1 flex flex-col">{children}</main>
         <Footer />
-
       </body>
     </html>
   );
