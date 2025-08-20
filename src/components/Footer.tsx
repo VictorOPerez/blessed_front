@@ -29,9 +29,6 @@ export default function Footer() {
                     <ul className="space-y-2 text-sm">
                         {[
                             ["Inicio", "#inicio"],
-                            ["Servicios", "#servicios"],
-                            ["Testimonios", "#testimonios"],
-                            ["Sobre nosotros", "#sobre-nosotros"],
                             ["Booking", "#booking"],
                             ["Contacto", "#contacto"],
                         ].map(([label, href]) => (
@@ -53,8 +50,8 @@ export default function Footer() {
                     <ul className="space-y-3 text-sm">
                         <li className="flex items-center gap-2">
                             <Phone className="w-4 h-4 text-[#FF8A7B]" />
-                            <a href="tel:+18135551234" className="hover:text-[#FF8A7B]">
-                                +1&nbsp;(813)&nbsp;555-1234
+                            <a href="tel:+18134007493" className="hover:text-[#FF8A7B]">
+                                +1&nbsp;(813)&nbsp;400-7493
                             </a>
                         </li>
                         <li className="flex items-center gap-2">
@@ -63,7 +60,7 @@ export default function Footer() {
                                 href="mailto:info@blessedmassage.com"
                                 className="hover:text-[#FF8A7B]"
                             >
-                                info@blessedmassage.com
+                                info@blessedfl.com
                             </a>
                         </li>
                         <li className="flex items-start gap-2">

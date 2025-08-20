@@ -29,7 +29,7 @@ export default function BookingLayout({ children }: { children: React.ReactNode 
   }, [pathname, currentStep, router]);
 
   return (
-    <section className="flex-1 flex flex-col bg-[#FFF8F2] text-[#4D4D4D] pt-20 md:pt-20">
+    <section className="flex-1 flex flex-col bg-[#FFF8F2] text-[#4D4D4D] min-h-screen pt-20 pb-10 md:pt-20">
       <BookingStepsHeader />
       <Toaster position="top-center" richColors />
       <main className=" mx-auto px-2 md:px-4 mt-6 w-full    md:w-max">{children}</main>

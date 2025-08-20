@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 
 const navItems = [
     { label: "Inicio", href: "/" },
@@ -17,15 +18,36 @@ export default function NavBar() {
         <header className="fixed top-0 z-99 w-full bg-[#FAF6F1]/90 backdrop-blur-sm shadow">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 h-16">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <span className="inline-block h-7 w-7 rounded-full border-2 border-[#FF8C7C]" />
-                    <span className="font-playfair text-xl font-semibold text-[#355C57]">
-                        Blessed
+                <Link href="/" className="flex items-center">
+                    <Image
+                        src="/img/BM_green_B_coralM_accessible_128.png"
+                        alt="BM"
+                        width={48} height={48}
+                        className="block object-contain md:w-10 md:h-10"
+                        priority
+                    />
+
+                    {/* MOBILE: texto simple */}
+                    <span className="font-brand text-lg tracking-[-0.01em] font-semibold whitespace-nowrap">
+                        <span className="text-[#275B59]">Blessed</span>{" "}
+                        <span className="text-[#E26755]">Massage</span>
                     </span>
+
+                    {/* DESKTOP: M del monograma */}
+
                 </Link>
-                <Link href={"/booking"} className=" text-base bg-[#FF8F7A]  w-max p-3 rounded-full text-white block md:hidden">
-                    Agendar mi Sesión
+
+
+                {/* mobile cta corto */}
+                <Link
+                    href="/booking"
+                    className="md:hidden rounded-full bg-[#E26755] text-white px-3 py-1 text-sm"
+                >
+                    Agendar
                 </Link>
+
+                {/* desktop cta completo */}
+
 
                 {/* Hamburger mobile */}
                 <button

@@ -258,3 +258,28 @@
 .btn-spa-accent:hover {
   @apply bg-[var(--spa-primary-50)];
 }
+
+/* globals.css */
+.brand-wordmark {
+  font-family: var(--font-brand), serif;
+  /* misma familia que el monograma */
+  font-weight: 500;
+  /* 600–700 según te guste */
+  font-size: 1.5rem;
+  /* text-2xl aprox */
+  letter-spacing: -0.01em;
+  /* un pelín de compresión */
+  line-height: 1;
+  /* leading-none */
+}
+
+.brand-green {
+  color: #275B59;
+}
+
+/* verde pino del brand */
+.brand-coral {
+  color: #E26755;
+}
+
+/* coral accesible (puedes usar #FF8F7A si prefieres) */

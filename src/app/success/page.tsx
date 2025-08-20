@@ -1,9 +1,11 @@
 // app/booking/success/page.tsx
+"use client";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { CheckCircle2, CalendarCheck, Clock, MapPin, Home, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
+import { useEffect } from "react";
+import { useBookingStore } from "@/stores/bookingStore";
 export const metadata: Metadata = {
     title: "Reserva confirmada | Blessed Massage & Recovery",
     description: "Tu reserva fue confirmada correctamente.",
@@ -28,7 +30,15 @@ export default async function SuccessPage({ searchParams }: { searchParams: Prom
     const sp = await searchParams;
     // Query params que puedes pasar en tu success_url:
     // ?session_id={CHECKOUT_SESSION_ID}&svc=Masaje%2060&dt=2025-08-12T18:00:00Z&dur=60&loc=Tampa%2C%20FL
-    // opcional (solo mostrar)
+
+
+    const reset = useBookingStore((s) => s.reset);
+
+    useEffect(() => {
+        reset(); // limpiamos una vez que ya regresó de Stripe
+    }, [reset]);
+
+
     const service = qp(sp, "svc") || "Sesión de masaje";
     const dtISO = qp(sp, "dt");                   // ISO de inicio (recomendado)
     const durationM = Number(qp(sp, "dur") || "60");  // minutos (default 60)

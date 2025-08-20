@@ -1,5 +1,5 @@
 import ContactForm from "@/components/ContactForm";
-import { ClockIcon, DevicePhoneMobileIcon, EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, DevicePhoneMobileIcon, EnvelopeIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,8 +25,8 @@ export default function ContactPage() {
                     <ul className="space-y-3 text-sm">
                         <li className=" flex gap-1">
                             <DevicePhoneMobileIcon className="w-5 h-5 text-spa-prim" />
-                            <a href="tel:+13526021604" className="underline hover:no-underline">
-                                (352) 602-1604
+                            <a href="tel:+8134007493" className="underline hover:no-underline">
+                                (813) 400-7493
                             </a>
                         </li>
 
@@ -34,10 +34,10 @@ export default function ContactPage() {
                             <EnvelopeIcon className="w-5 h-5 text-spa-prim" />
                             <span className="font-medium">Email:</span>{" "}
                             <a
-                                href="mailto:hello@blessedmassage.com"
+                                href="mailto:contact@blessedfl.com"
                                 className="underline hover:no-underline"
                             >
-                                hello@blessedmassage.com
+                                contact@blessedfl.com
                             </a>
                         </li>
                         <li className=" flex gap-1">
@@ -47,7 +47,7 @@ export default function ContactPage() {
                         <li className=" flex gap-1">
                             <ClockIcon className="w-5 h-5 text-spa-prim" />
 
-                            <span className="font-medium">Horario:</span> Lun–Sáb, 9:00–19:00</li>
+                            <span className="font-medium">Horario:</span> Lun–Sáb, 7:00–19:00</li>
                     </ul>
 
                     {/* Botones de acción */}
@@ -55,7 +55,7 @@ export default function ContactPage() {
                         {/* WhatsApp */}
                         <a
                             href={
-                                "https://wa.me/13526021604?text=" +
+                                "https://wa.me/8134007493?text=" +
                                 encodeURIComponent("Hola, me gustaría agendar un masaje a domicilio. ¿Tienen disponibilidad?")
                             }
                             target="_blank"
@@ -73,7 +73,7 @@ export default function ContactPage() {
 
                         {/* Llamar */}
                         <a
-                            href="tel:+13526021604"
+                            href="tel:+8134007493"
                             className="inline-flex items-center gap-2 rounded-full bg-dorado text-cream px-4 py-2 shadow hover:shadow-md"
                         >
                             Llamar ahora
@@ -81,7 +81,7 @@ export default function ContactPage() {
 
                         {/* SMS (opcional) */}
                         <a
-                            href="sms:+13526021604"
+                            href="sms:+8134007493"
                             className="inline-flex items-center gap-2 rounded-full border border-cocoa/20 px-4 py-2 hover:bg-white/60"
                         >
                             Enviar SMS

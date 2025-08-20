@@ -2,36 +2,43 @@
 
 import BookingNavButtons from "@/components/BookingNavButtons";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from "@stripe/stripe-js";
+
+// Carga Stripe una sola vez
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
 
 export default function BookingConfirmation() {
     const router = useRouter();
-
-    const booking = useBookingStore((state) => state.booking);
-    const setStep = useBookingStore((state) => state.setCurrentStep);
-    const reset = useBookingStore((state) => state.reset)
+    const booking = useBookingStore((s) => s.booking);
+    const reset = useBookingStore((s) => s.reset);
     const { service, date, time } = booking;
 
-    // Redirige si no hay datos
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    // Redirige si faltan datos (pero no mientras enviamos)
     useEffect(() => {
-        if (!service || !date || !time) {
+        if (!submitting && (!service || !date || !time)) {
             router.replace("/booking");
         }
-    }, [service, date, time, router]);
+    }, [service, date, time, router, submitting]);
 
+    // ⚠️ No usamos useMemo: variable simple (evita cambio de orden de hooks)
+    const formattedDate =
+        date
+            ? new Date(date).toLocaleDateString("es-ES", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            })
+            : "";
 
-
+    // Si faltan campos, no renderizamos contenido (los hooks ya se llamaron arriba)
     if (!service || !date || !time) return null;
-
-    const formattedDate = new Date(date).toLocaleDateString("es-ES", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
 
     const details = [
         { label: "Servicio", value: service.name },
@@ -41,72 +48,120 @@ export default function BookingConfirmation() {
         { label: "Precio", value: service.price },
     ];
 
-
-
-
     const handleContinue = async () => {
         if (!booking.name || !booking.email || !booking.phone) {
-            return alert('Por favor completa nombre, email y teléfono.');
+            alert("Por favor completa nombre, email y teléfono.");
+            return;
         }
+        if (submitting) return;
+
+        setSubmitting(true);
+        setErrorMsg(null);
+
         try {
             const res = await fetch(
-                'https://servermasaje-production.up.railway.app/api/bookings',
+                "https://servermasaje-production.up.railway.app/api/bookings",
                 {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ booking })
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ booking }),
+                    cache: "no-store",
                 }
             );
+
             const payload = await res.json();
-            reset()
-            console.log('Backend payload:', payload);
-
             if (!res.ok) {
-                return alert(`Error: ${payload.error || JSON.stringify(payload)}`);
+                setSubmitting(false);
+                setErrorMsg(payload.error || "No se pudo crear la sesión de pago.");
+                return;
             }
 
-            const { sessionId } = payload;
-            if (!sessionId) {
-                return alert('El backend no devolvió sessionId.');
+            const { sessionId, url } = payload;
+
+            if (sessionId) {
+                const stripe = await stripePromise;
+                const { error } = await stripe!.redirectToCheckout({ sessionId });
+                setSubmitting(false);
+                setErrorMsg(error?.message || "No se pudo redirigir a Stripe.");
+                return;
             }
 
-            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
-            await stripe!.redirectToCheckout({ sessionId });
+            if (url) {
+                window.location.assign(url);
+                return;
+            }
 
+            setSubmitting(false);
+            setErrorMsg("El backend no devolvió sessionId ni url.");
         } catch (err) {
-            console.error('Error en handleContinue:', err);
-            alert('No se pudo iniciar el pago. Inténtalo de nuevo.');
+            console.error("Error en handleContinue:", err);
+            setSubmitting(false);
+            setErrorMsg("No se pudo iniciar el pago. Inténtalo de nuevo.");
         }
     };
 
-
-
     return (
-        <section className="booking-card">
-            <h1 className="text-4xl text-center  font-semibold  text-spa-prim mb-6 ">Resumen de la Reserva</h1>
+        <section className="booking-card relative ">
+            {submitting && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-lg px-8 py-10 flex flex-col items-center max-w-sm w-full">
+                        {/* Spinner */}
+                        <div className="w-12 h-12 border-4 border-gray-200 border-t-spa-prim rounded-full animate-spin mb-6"></div>
 
-            <ul className="space-y-5 w-full px-2 md:px-10">
+                        {/* Mensaje principal */}
+                        <p className="text-lg font-semibold text-gray-800 text-center">
+                            Un momento, estamos preparando tu pago de forma segura…
+                        </p>
+
+                        {/* Mensaje secundario */}
+                        <p className="text-sm text-gray-500 text-center mt-3">
+                            No cierres esta ventana.
+                        </p>
+                    </div>
+                </div>
+
+            )}
+
+            <h1 className="text-4xl text-center font-semibold text-spa-prim mb-6">
+                Resumen de la Reserva
+            </h1>
+
+            <ul className={`space-y-5 w-full px-2 md:px-10 ${submitting ? "pointer-events-none opacity-50" : ""}`}>
                 {details.map((item, index) => (
                     <li key={index} className="flex items-start gap-4">
                         <CheckIcon className="w-6 h-6 text-green-500" />
                         <div className="flex flex-col sm:flex-row sm:justify-between w-full border-b border-gray-200 pb-3">
                             <span className="font-medium">{item.label}</span>
-                            {
-                                item.label === "Hora" ? <div className=" flex gap-2">
-                                    {time.map((t) => <span key={t}>{t}</span>)}
-                                </div> : <span className="text-gray-600">{item.value}</span>
-                            }
-
+                            {item.label === "Hora" ? (
+                                <div className="flex gap-2">
+                                    {(Array.isArray(time) ? time : [time]).map((t) => (
+                                        <span key={t}>{t}</span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <span className="text-gray-600">{String(item.value)}</span>
+                            )}
                         </div>
                     </li>
                 ))}
             </ul>
+
+            {errorMsg && (
+                <div className="px-10 mt-4">
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-red-700 text-sm">
+                        {errorMsg}
+                    </div>
+                </div>
+            )}
+
             <div className="text-center w-full px-10">
-                <div className=" text-center">
+                <div className="text-center">
                     <BookingNavButtons
                         backHref="/booking/agreement"
                         showContinue
                         onContinue={handleContinue}
+                    // si ya añadiste la prop disabled al componente, puedes pasarla:
+                    // disabled={submitting}
                     />
                 </div>
             </div>
