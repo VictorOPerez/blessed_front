@@ -1,15 +1,10 @@
 // app/booking/success/page.tsx
 "use client";
-import type { Metadata } from "next";
 import Image from "next/image";
 import { CheckCircle2, CalendarCheck, Clock, MapPin, Home, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
-export const metadata: Metadata = {
-    title: "Reserva confirmada | Blessed Massage & Recovery",
-    description: "Tu reserva fue confirmada correctamente.",
-};
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const qp = (sp: SearchParams, k: string) =>
