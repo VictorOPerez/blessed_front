@@ -49,6 +49,13 @@ export default function BookingConfirmation() {
     ];
 
     const handleContinue = async () => {
+        const { agreementSignatureDataURL } = booking;
+
+        const signatureBase64 =
+            agreementSignatureDataURL ? agreementSignatureDataURL.split(",")[1] : undefined;
+
+
+
         if (!booking.name || !booking.email || !booking.phone) {
             alert("Por favor completa nombre, email y teléfono.");
             return;
@@ -59,12 +66,20 @@ export default function BookingConfirmation() {
         setErrorMsg(null);
 
         try {
+
             const res = await fetch(
                 "https://servermasaje-production.up.railway.app/api/bookings",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ booking }),
+                    body: JSON.stringify({
+                        booking: {
+                            ...booking,
+                            signatureBase64,                           // ⬅️ lo que espera tu backend
+                            acceptedAt: new Date().toISOString(),     // ⬅️ timestamp útil
+                            // (policyVersion/hash ya van en booking si los seteaste en el paso de acuerdo)
+                        },
+                    }),
                     cache: "no-store",
                 }
             );
@@ -101,7 +116,7 @@ export default function BookingConfirmation() {
     };
 
     return (
-        <section className="booking-card relative ">
+        <section className="booking-card relative   h-auto md:min-h-0 md:h-[550px] ">
             {submitting && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-lg px-8 py-10 flex flex-col items-center max-w-sm w-full">

@@ -16,7 +16,12 @@ type BookingData = {
     name: string | null;
     email: string | null;
     phone: string | null;
+
+    // Consentimiento
     agreementAccepted: boolean;
+    agreementSignatureDataURL: string | null;   // ⬅️ nuevo
+    agreementPolicyVersion: string | null;      // ⬅️ nuevo
+    agreementPolicyHash: string | null;         // ⬅️ nuevo
 };
 
 const emptyBooking: Omit<BookingData, "name" | "email" | "phone"> = {
@@ -24,24 +29,29 @@ const emptyBooking: Omit<BookingData, "name" | "email" | "phone"> = {
     date: null,
     time: null,
     agreementAccepted: false,
-    // name y email no van aquí a propósito
+    agreementSignatureDataURL: null,  // ⬅️ nuevo
+    agreementPolicyVersion: null,     // ⬅️ nuevo
+    agreementPolicyHash: null,        // ⬅️ nuevo
 };
-
-
 
 type BookingStore = {
     booking: BookingData;
     currentStep: number;
-    hasHydrated: boolean;          // 👈 nueva
+    hasHydrated: boolean;
     setCurrentStep: (step: number) => void;
-    setHasHydrated: () => void;    // 👈 nueva
+    setHasHydrated: () => void;
+
     setService: (service: Service) => void;
     setDate: (date: string) => void;
     setTime: (time: string[]) => void;
     setName: (name: string) => void;
     setEmail: (email: string) => void;
     setPhone: (phone: string) => void;
+
     setAgreement: (accepted: boolean) => void;
+    setAgreementSignature: (dataURL: string | null) => void; // ⬅️ nuevo
+    setAgreementPolicyMeta: (m: { version: string | null; hash: string | null }) => void; // ⬅️ nuevo
+
     reset: () => void;
 };
 
@@ -56,25 +66,44 @@ export const useBookingStore = create<BookingStore>()(
                 email: null,
                 phone: null,
                 agreementAccepted: false,
+                agreementSignatureDataURL: null, // ⬅️ nuevo
+                agreementPolicyVersion: null,    // ⬅️ nuevo
+                agreementPolicyHash: null,       // ⬅️ nuevo
             },
-            currentStep: 1, // comienza en el paso 1
+            currentStep: 1,
             hasHydrated: false,
             setHasHydrated: () => set({ hasHydrated: true }),
             setCurrentStep: (step) => set(() => ({ currentStep: step })),
-            setService: (service) => set((state) => ({ booking: { ...state.booking, service } })),
-            setDate: (date) => set((state) => ({ booking: { ...state.booking, date } })),
+
+            setService: (service) => set((s) => ({ booking: { ...s.booking, service } })),
+            setDate: (date) => set((s) => ({ booking: { ...s.booking, date } })),
             setTime: (time: string[]) => set((s) => ({ booking: { ...s.booking, time } })),
-            setName: (name) => set((state) => ({ booking: { ...state.booking, name } })),
-            setEmail: (email) => set((state) => ({ booking: { ...state.booking, email } })),
-            setPhone: (phone) => set((state) => ({ booking: { ...state.booking, phone } })),
-            setAgreement: (accepted) => set((state) => ({ booking: { ...state.booking, agreementAccepted: accepted } })),
+            setName: (name) => set((s) => ({ booking: { ...s.booking, name } })),
+            setEmail: (email) => set((s) => ({ booking: { ...s.booking, email } })),
+            setPhone: (phone) => set((s) => ({ booking: { ...s.booking, phone } })),
+
+            setAgreement: (accepted) =>
+                set((s) => ({ booking: { ...s.booking, agreementAccepted: accepted } })),
+
+            // ⬅️ nuevos setters
+            setAgreementSignature: (dataURL) =>
+                set((s) => ({ booking: { ...s.booking, agreementSignatureDataURL: dataURL } })),
+            setAgreementPolicyMeta: ({ version, hash }) =>
+                set((s) => ({
+                    booking: {
+                        ...s.booking,
+                        agreementPolicyVersion: version,
+                        agreementPolicyHash: hash,
+                    },
+                })),
+
             reset: () =>
-                set((state) => ({
+                set((s) => ({
                     booking: {
                         ...emptyBooking,
-                        name: state.booking.name,   // 👈 conserva
-                        email: state.booking.email, // 👈 conserva
-                        phone: state.booking.phone,                // si quieres borrarlo
+                        name: s.booking.name,   // conserva
+                        email: s.booking.email, // conserva
+                        phone: s.booking.phone, // conserva (ajusta si quieres limpiar)
                     },
                     currentStep: 1,
                 })),
@@ -82,7 +111,7 @@ export const useBookingStore = create<BookingStore>()(
         {
             name: "booking-storage",
             onRehydrateStorage: () => (state) => {
-                state?.setHasHydrated();   // marca cuando terminó la re-hidratación
+                state?.setHasHydrated();
             },
         }
     )

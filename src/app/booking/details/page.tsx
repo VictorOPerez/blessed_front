@@ -41,7 +41,7 @@ export default function BookingInfoPage() {
     if (!service || !date || !time) return null;
 
     return (
-        <div className="booking-card">
+        <div className="booking-card   h-auto md:min-h-0 md:h-[550px]">
             <h1 className="text-2xl font-semibold text-center text-spa-prim">
                 3. Tus datos personales
             </h1>

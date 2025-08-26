@@ -60,7 +60,7 @@ export default function BookingDatePage() {
     if (!selectedService) return null;
 
     return (
-        <div className=" booking-card">
+        <div className=" booking-card   h-auto md:min-h-0 md:h-[550px]">
             {/* Icono y título */}
             <div className="flex flex-col justify-center items-center gap-2">
                 {/* Título principal */}
@@ -122,7 +122,7 @@ export default function BookingDatePage() {
             </div>
 
             {/* Botón de navegación */}
-            <div className="text-center w-full px-2 md:px-10">
+            <div className="text-center w-full px-2 md:px-10 mt-5">
                 <div className=" text-center">
                     <BookingNavButtons backHref="/booking" showContinue onContinue={handleContinue} />
                 </div>

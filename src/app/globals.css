@@ -169,7 +169,7 @@
 .booking-card {
   @apply bg-[var(--spa-bg)] rounded-lg border w-full flex flex-col md:items-center md:justify-center px-4 md:px-6 py-4 gap-7
   /* 👇 He cambiado la altura a 'auto' en móvil y he quitado el max-width */
-  h-auto md:min-h-0 md:h-[550px]
+
   /* En pantallas 'md' (≥768px), el ancho se fijará en 520px con estas clases */
   md:min-w-[520px] md:basis-[520px] md:flex-none;
 }
