@@ -1,46 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import SignaturePad from "signature_pad";
 import { useBookingStore } from "@/stores/bookingStore";
 import BookingNavButtons from "@/components/BookingNavButtons";
-import { toast } from "sonner"
-
-/**
- * ✅ Qué hace este componente
- * - Muestra RESUMEN + TÉRMINOS completos del consentimiento informado (mejorado)
- * - Captura la aceptación (checkbox) y la FIRMA dibujada del cliente
- * - (Frontend-only) Guarda en Zustand: accepted, signatureDataURL, policyVersion, policyHash
- * - Habilita "Continuar" solo si hay check + firma
- * - Botón "Imprimir / Guardar PDF" sin dependencias (abre el diálogo de impresión del navegador)
- *
- * 🧩 Requisitos mínimos en tu Zustand store (añade si no existen):
- * --------------------------------------------------------------
- * type BookingState = {
- *   booking: {
- *     service?: any, date?: string|null, time?: string|null,
- *     name?: string, email?: string,
- *     agreementAccepted: boolean,
- *     agreementSignatureDataURL?: string | null,
- *     agreementPolicyVersion?: string | null,
- *     agreementPolicyHash?: string | null,
- *   };
- *   setAgreement: (accepted: boolean) => void;
- *   setAgreementSignature?: (dataURL: string|null) => void; // ⬅️ nuevo
- *   setAgreementPolicyMeta?: (v: { version: string|null; hash: string|null }) => void; // ⬅️ nuevo
- *   setCurrentStep: (n: number) => void;
- * };
- * --------------------------------------------------------------
- * Si aún no tienes setAgreementSignature / setAgreementPolicyMeta, el componente funcionará
- * pero solo guardará la firma en memoria local hasta "Continuar" (y mostrará un console.warn).
- */
+import { toast } from "sonner";
 
 // === Config de política ===
 const POLICY_VERSION = "v1.0";
 
 // Texto canónico del consentimiento (ES).
-// Puedes moverlo a un .md o a la BD; aquí lo dejamos inline por ahora.
 const POLICY_HTML = `
   <h2 class="text-xl font-semibold mb-3">Consentimiento informado y exención de responsabilidad</h2>
   <p class="mb-2">El masaje que recibirá tiene fines de <strong>bienestar, reducción de estrés y alivio de tensión muscular</strong>. No constituye diagnóstico ni tratamiento médico y no sustituye la atención de un profesional de la salud. Informe siempre a su terapeuta sobre <strong>condiciones médicas, cirugías, medicamentos</strong> (incluidos anticoagulantes), <strong>alergias</strong> y cualquier cambio en su estado de salud.</p>
@@ -95,15 +65,22 @@ const SUMMARY_BULLETS = [
     "Tus datos personales se tratan con la máxima privacidad y se utilizan únicamente para la gestión de tus citas.",
 ];
 
+// ===== Tipos de SignaturePad (sin any) =====
+type SigData = Parameters<SignaturePad["fromData"]>[0];      // PointGroup[]
+type SignaturePadWithEvents = SignaturePad & {
+    addEventListener?: (ev: "beginStroke" | "endStroke", cb: () => void) => void;
+    onBegin?: () => void;
+    onEnd?: () => void;
+};
+
 export default function ConfidentialityAgreement() {
     const router = useRouter();
 
     // Store
     const booking = useBookingStore((s) => s.booking);
     const setAgreement = useBookingStore((s) => s.setAgreement);
-    const setStep = useBookingStore((s) => s.setCurrentStep);
-    const setAgreementSignature = useBookingStore((s: any) => s.setAgreementSignature);
-    const setAgreementPolicyMeta = useBookingStore((s: any) => s.setAgreementPolicyMeta);
+    const setAgreementSignature = useBookingStore((s) => s.setAgreementSignature);
+    const setAgreementPolicyMeta = useBookingStore((s) => s.setAgreementPolicyMeta);
 
     const { service, date, time, name, email, agreementAccepted } = booking || {};
 
@@ -112,7 +89,7 @@ export default function ConfidentialityAgreement() {
     const padRef = useRef<SignaturePad | null>(null);
     const [sigDataURL, setSigDataURL] = useState<string | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
-    const strokesStack = useRef<Array<any>>([]); // para "undo"
+    const strokesStack = useRef<SigData | null>(null); // para "undo"
 
     // Redirigir si falta algún paso previo
     useEffect(() => {
@@ -131,13 +108,18 @@ export default function ConfidentialityAgreement() {
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             const width = canvas.parentElement ? canvas.parentElement.clientWidth : 600;
             const height = 220; // alto fijo agradable
-            // Guardar firma actual para no perderla en el resize
-            const prev = padRef.current && !padRef.current.isEmpty() ? padRef.current.toData() : null;
+
+            // Guardar firma actual antes de redimensionar
+            const prev = padRef.current && !padRef.current.isEmpty()
+                ? (padRef.current.toData() as SigData)
+                : null;
 
             canvas.width = Math.floor(width * ratio);
             canvas.height = Math.floor(height * ratio);
-            canvas.style.width = width + "px";
-            canvas.style.height = height + "px";
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            // 🔒 Necesario en móviles para que el lienzo reciba los trazos
+            canvas.style.touchAction = "none";
 
             const ctx = canvas.getContext("2d");
             if (ctx) ctx.scale(ratio, ratio);
@@ -146,7 +128,7 @@ export default function ConfidentialityAgreement() {
                 padRef.current = new SignaturePad(canvas, {
                     minWidth: 0.6,
                     maxWidth: 2.2,
-                    penColor: "#111827", // gray-900
+                    penColor: "#111827",
                 });
 
                 // Handlers de eventos (compatibilidad v3/v4)
@@ -154,17 +136,28 @@ export default function ConfidentialityAgreement() {
                 const handleEnd = () => {
                     setIsDrawing(false);
                     if (!padRef.current) return;
-                    const data = padRef.current.toData();
+                    const data = padRef.current.toData() as SigData;
                     strokesStack.current = data; // snapshot para undo
                     setSigDataURL(padRef.current.isEmpty() ? null : padRef.current.toDataURL());
                 };
 
-                // v4+: eventos beginStroke / endStroke
-                (padRef.current as any).addEventListener?.("beginStroke", handleBegin);
-                (padRef.current as any).addEventListener?.("endStroke", handleEnd);
-                // fallback v2/v3: propiedades onBegin / onEnd
-                (padRef.current as any).onBegin = handleBegin;
-                (padRef.current as any).onEnd = handleEnd;
+                const padEvt = padRef.current as SignaturePadWithEvents;
+                padEvt.addEventListener?.("beginStroke", handleBegin);
+                padEvt.addEventListener?.("endStroke", handleEnd);
+                padEvt.onBegin = handleBegin; // fallback v2/v3
+                padEvt.onEnd = handleEnd;
+
+                // iOS: evita que el gesto táctil haga scroll/zoom en lugar de dibujar
+                canvas.addEventListener(
+                    "touchstart",
+                    (e) => e.preventDefault(),
+                    { passive: false }
+                );
+                canvas.addEventListener(
+                    "touchmove",
+                    (e) => e.preventDefault(),
+                    { passive: false }
+                );
             } else if (prev) {
                 // restaurar trazos tras el resize
                 padRef.current.clear();
@@ -176,7 +169,6 @@ export default function ConfidentialityAgreement() {
         window.addEventListener("resize", resize);
         return () => {
             window.removeEventListener("resize", resize);
-            // Limpieza básica (sin .off por compatibilidad)
             padRef.current?.clear();
             padRef.current = null;
         };
@@ -201,14 +193,14 @@ export default function ConfidentialityAgreement() {
 
     const handleClear = () => {
         padRef.current?.clear();
-        strokesStack.current = [];
+        strokesStack.current = null;
         setSigDataURL(null);
     };
 
     const handleUndo = () => {
         const pad = padRef.current;
         if (!pad) return;
-        const data = pad.toData();
+        const data = pad.toData() as SigData;
         if (data) {
             data.pop();
             pad.clear();
@@ -218,17 +210,15 @@ export default function ConfidentialityAgreement() {
         }
     };
 
-
     const canContinue = Boolean(agreementAccepted && sigDataURL);
 
     const handleContinue = () => {
         if (!agreementAccepted) {
-            toast("Debes aceptar los términos para continuar.")
-
+            toast("Debes aceptar los términos para continuar.");
             return;
         }
         if (!sigDataURL) {
-            toast("Por favor, firma en el recuadro para continuar.")
+            toast("Por favor, firma en el recuadro para continuar.");
             return;
         }
         setAgreement(true);
@@ -237,7 +227,7 @@ export default function ConfidentialityAgreement() {
         } else {
             console.warn("[Consent] Falta setAgreementSignature en el store (opcional).");
         }
-        // Paso siguiente (resumen / pago) – ajusta al flujo que ya tienes
+        // Paso siguiente (resumen / pago)
         useBookingStore.getState().setCurrentStep?.(5);
         router.push("/booking/resumen");
     };
@@ -264,7 +254,10 @@ export default function ConfidentialityAgreement() {
                     </section>
 
                     {/* Texto completo */}
-                    <section className="rounded-md border border-gray-200 bg-white p-5 text-gray-700 shadow-sm print:border-0" aria-label="Términos completos del consentimiento">
+                    <section
+                        className="rounded-md border border-gray-200 bg-white p-5 text-gray-700 shadow-sm print:border-0"
+                        aria-label="Términos completos del consentimiento"
+                    >
                         <details className="group">
                             <summary className="cursor-pointer select-none text-base font-medium text-gray-900 focus:outline-none">
                                 Ver términos completos
@@ -291,13 +284,16 @@ export default function ConfidentialityAgreement() {
 
                     {/* Firma */}
                     <section>
-                        <h2 className="text-base font-semibold text-gray-900 mb-2">Firma</h2>
-                        <div className="rounded-md border border-gray-300 bg-white p-3">
+                        <div className="rounded-md border border-gray-300 bg-white p-3 ">
                             <div className="text-xs text-gray-500 mb-2">
                                 Nombre: <span className="font-medium">{name}</span> &nbsp;•&nbsp; Fecha: {new Date().toLocaleDateString()}
                             </div>
                             <div className="relative">
-                                <canvas ref={canvasRef} className="w-full rounded-md border border-dashed border-gray-300 bg-gray-50" />
+                                <canvas
+                                    ref={canvasRef}
+                                    className="w-full rounded-md border border-dashed border-gray-300 bg-gray-50"
+                                    style={{ touchAction: "none" }} // 👈 importante en móviles
+                                />
                                 {!sigDataURL && !isDrawing && (
                                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-400">
                                         Firme dentro del recuadro…
@@ -315,14 +311,11 @@ export default function ConfidentialityAgreement() {
                         </div>
                     </section>
 
-
                     <div className="text-center w-full px-2 md:px-10">
                         <div className=" text-center">
                             <BookingNavButtons backHref="/booking/details" showContinue onContinue={handleContinue} />
                         </div>
                     </div>
-
-
                 </main>
             </div>
 
