@@ -17,6 +17,7 @@ type ValidationState =
 
 type CancellationState = "idle" | "processing" | "success" | "failed";
 
+// --- helpers ---
 function isRecord(v: unknown): v is Record<string, unknown> {
     return typeof v === "object" && v !== null;
 }
@@ -43,6 +44,7 @@ export default function CancelFlow({
     const [cancellationState, setCancellationState] =
         useState<CancellationState>("idle");
 
+    // 1) Validar token al cargar
     useEffect(() => {
         if (!bookingId || !token) {
             setValidationState({
@@ -52,20 +54,25 @@ export default function CancelFlow({
             });
             return;
         }
+
         const ac = new AbortController();
+
         (async () => {
             try {
                 const url = `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${encodeURIComponent(
                     bookingId
                 )}&token=${encodeURIComponent(token)}`;
+
                 const res = await fetch(url, { cache: "no-store", signal: ac.signal });
                 const json: unknown = await res.json().catch(() => null);
+
                 if (!res.ok) {
                     const msg = pickServerError(json, res.statusText);
                     throw new Error(
                         msg || "El enlace de cancelación no es válido o ha expirado."
                     );
                 }
+
                 setValidationState({
                     status: "success",
                     data: json as BookingValidationData,
@@ -82,12 +89,15 @@ export default function CancelFlow({
                 });
             }
         })();
+
         return () => ac.abort();
     }, [bookingId, token]);
 
+    // 2) Confirmar cancelación
     const handleConfirmCancellation = async () => {
         if (!bookingId || !token) return;
         setCancellationState("processing");
+
         try {
             const res = await fetch(
                 "https://servermasaje-production.up.railway.app/api/bookings/cancel",
@@ -98,17 +108,21 @@ export default function CancelFlow({
                     body: JSON.stringify({ bookingId, token }),
                 }
             );
+
             const json: unknown = await res.json().catch(() => null);
+
             if (!res.ok) {
                 const msg = pickServerError(json, res.statusText);
                 throw new Error(msg || "No se pudo procesar la cancelación.");
             }
+
             setCancellationState("success");
         } catch {
             setCancellationState("failed");
         }
     };
 
+    // --- render ---
     if (validationState.status === "loading") {
         return (
             <div className="flex h-screen items-center justify-center">
@@ -116,6 +130,7 @@ export default function CancelFlow({
             </div>
         );
     }
+
     if (validationState.status === "error") {
         return (
             <div className="flex h-screen items-center justify-center text-red-600">
@@ -123,6 +138,7 @@ export default function CancelFlow({
             </div>
         );
     }
+
     if (cancellationState === "success") {
         return (
             <div className="flex h-screen items-center justify-center text-center px-6">
@@ -139,10 +155,10 @@ export default function CancelFlow({
     return (
         <CancelBookingPage
             brandName="Blessed Massage & Recovery"
-            serviceTitle={validationState.data.serviceTitle}
-            dateText={validationState.data.dateText}
-            timeText={validationState.data.timeText}
-            eligibleForRefund={validationState.data.eligibleForRefund}
+            serviceTitle={validationState.data!.serviceTitle}
+            dateText={validationState.data!.dateText}
+            timeText={validationState.data!.timeText}
+            eligibleForRefund={validationState.data!.eligibleForRefund}
             loading={cancellationState === "processing"}
             onConfirm={handleConfirmCancellation}
         />
