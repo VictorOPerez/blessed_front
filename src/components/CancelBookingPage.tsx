@@ -1,17 +1,18 @@
-"use client"
+"use client";
+
 import Link from "next/link";
 import React from "react";
 
 type CancelCardProps = {
-    brandName?: string;         // Texto de marca arriba-izq
-    serviceTitle: string;       // "Masaje Sueco"
-    dateText: string;           // "24 de abril de 2024"
-    timeText: string;           // "10:00 a.m."
-    eligibleForRefund?: boolean; // true = mensaje verde de reembolso
-    onConfirm: () => void;      // handler botón principal
-    loading?: boolean;          // desactivar/mostrar spinner en confirmar
-    primaryHex?: string;        // color marca (botón / acentos)
-    bgHex?: string;             // fondo suave tipo crema
+    brandName?: string;
+    serviceTitle: string;
+    dateText: string;
+    timeText: string;
+    eligibleForRefund?: boolean;
+    onConfirm: () => void;
+    loading?: boolean;
+    primaryHex?: string;
+    bgHex?: string;
 };
 
 export function CancelBookingPage({
@@ -22,17 +23,12 @@ export function CancelBookingPage({
     eligibleForRefund = true,
     onConfirm,
     loading = false,
-    // puedes ajustar estos hex para tu branding exacto
-    primaryHex = "#E26755", // cálido marrón/anaranjado
-    bgHex = "#E26755",      // crema muy suave
+    primaryHex = "#E26755",
+    bgHex = "#E26755",
 }: CancelCardProps) {
     return (
-        <div
-            className="min-h-svh w-full pt-12"
-            style={{ backgroundColor: bgHex }}
-        >
+        <div className="min-h-svh w-full pt-12" style={{ backgroundColor: bgHex }}>
             <div className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
-
                 {/* Card */}
                 <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
                     {/* Título */}
@@ -40,7 +36,7 @@ export function CancelBookingPage({
                         Confirmar Cancelación de Reserva
                     </h1>
 
-                    {/* Resumen de la reserva */}
+                    {/* Resumen */}
                     <div className="mt-6 rounded-xl border border-neutral-200 bg-neutral-50/60 p-4 sm:p-5">
                         <div className="text-base font-semibold text-neutral-900">
                             {serviceTitle}
@@ -52,28 +48,32 @@ export function CancelBookingPage({
                         </div>
                     </div>
 
-                    {/* Mensaje de elegibilidad */}
+                    {/* Mensaje */}
                     {eligibleForRefund ? (
                         <div className="mt-6 flex items-start gap-3 text-neutral-800">
                             <span
                                 className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100"
                                 aria-hidden="true"
                             >
-                                {/* Check icon */}
                                 <svg
                                     viewBox="0 0 24 24"
                                     className="h-4 w-4"
                                     fill="none"
                                     stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    style={{ color: "#059669" }} // emerald-600
+                                    strokeWidth={2.5}
+                                    style={{ color: "#059669" }}
                                 >
-                                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path
+                                        d="M20 6L9 17l-5-5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
                                 </svg>
                             </span>
                             <p className="leading-relaxed">
-                                Eres elegible para un <span className="font-semibold">reembolso completo</span>{" "}
-                                porque estás cancelando con suficiente antelación.
+                                Eres elegible para un{" "}
+                                <span className="font-semibold">reembolso completo</span> porque
+                                estás cancelando con suficiente antelación.
                             </p>
                         </div>
                     ) : (
@@ -82,16 +82,19 @@ export function CancelBookingPage({
                                 className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100"
                                 aria-hidden="true"
                             >
-                                {/* Warning icon */}
                                 <svg
                                     viewBox="0 0 24 24"
                                     className="h-4 w-4"
                                     fill="none"
                                     stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    style={{ color: "#B45309" }} // amber-700
+                                    strokeWidth={2.5}
+                                    style={{ color: "#B45309" }}
                                 >
-                                    <path d="M12 9v4m0 4h.01M10.29 3.86l-8 14A2 2 0 004 21h16a2 2 0 001.71-3.14l-8-14a2 2 0 00-3.42 0z" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path
+                                        d="M12 9v4m0 4h.01M10.29 3.86l-8 14A2 2 0 004 21h16a2 2 0 001.71-3.14l-8-14a2 2 0 00-3.42 0z"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
                                 </svg>
                             </span>
                             <p className="leading-relaxed">
@@ -102,13 +105,14 @@ export function CancelBookingPage({
                         </div>
                     )}
 
-                    {/* Botones */}
+                    {/* Acciones */}
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <button
                             type="button"
                             onClick={onConfirm}
                             disabled={loading}
-                            className="inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-base font-semibold text-white shadow-sm transition disabled:opacity-70 sm:w-auto bg-[#E26755] cursor-pointer"
+                            className="inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-base font-semibold text-white shadow-sm transition disabled:opacity-70 sm:w-auto cursor-pointer"
+                            style={{ backgroundColor: primaryHex }}
                         >
                             {loading ? (
                                 <span className="inline-flex items-center gap-2">
@@ -123,7 +127,8 @@ export function CancelBookingPage({
                         </button>
 
                         <Link
-                            className="inline-flex w-full items-center justify-center rounded-xl border px-5 py-3 text-base font-semibold  transition hover:bg-neutral-50 sm:w-auto text-[#E26755] cursor-pointer"
+                            className="inline-flex w-full items-center justify-center rounded-xl border px-5 py-3 text-base font-semibold transition hover:bg-neutral-50 sm:w-auto cursor-pointer"
+                            style={{ color: primaryHex, borderColor: primaryHex }}
                             href={"/?status=safe"}
                         >
                             No, mantener mi reserva
@@ -131,9 +136,10 @@ export function CancelBookingPage({
                     </div>
                 </div>
 
-                {/* Nota opcional de tiempos bancarios */}
+                {/* Nota tiempos bancarios */}
                 <p className="mt-4 text-sm text-neutral-500">
-                    Si corresponde reembolso, tu banco puede tardar entre 5 y 10 días hábiles en reflejarlo.
+                    Si corresponde reembolso, tu banco puede tardar entre 5 y 10 días
+                    hábiles en reflejarlo.
                 </p>
             </div>
         </div>
@@ -142,18 +148,14 @@ export function CancelBookingPage({
 
 function Spinner() {
     return (
-        <svg
-            className="h-5 w-5 animate-spin"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-        >
+        <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
             <circle
                 className="opacity-25"
                 cx="12"
                 cy="12"
                 r="10"
                 stroke="currentColor"
-                strokeWidth="4"
+                strokeWidth={4}
                 fill="none"
             />
             <path

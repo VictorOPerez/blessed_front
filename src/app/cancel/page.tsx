@@ -1,33 +1,51 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { CancelBookingPage } from "@/components/CancelBookingPage"; // Tu componente de UI
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { CancelBookingPage } from "@/components/CancelBookingPage";
 
-// Definimos una interfaz para los datos que esperamos del backend
-interface BookingValidationData {
+type BookingValidationData = {
     serviceTitle: string;
     dateText: string;
     timeText: string;
     eligibleForRefund: boolean;
+};
+
+type ValidationState =
+    | { status: "loading"; data: null; errorMessage: null }
+    | { status: "success"; data: BookingValidationData; errorMessage: null }
+    | { status: "error"; data: null; errorMessage: string };
+
+type CancellationState = "idle" | "processing" | "success" | "failed";
+
+// --- helpers de tipado ---
+function isRecord(v: unknown): v is Record<string, unknown> {
+    return typeof v === "object" && v !== null;
+}
+function pickServerError(json: unknown, fallback: string): string {
+    if (isRecord(json)) {
+        const err = json["error"];
+        if (typeof err === "string" && err.trim()) return err;
+    }
+    return fallback;
 }
 
-// Un componente interno para manejar la lógica principal
+// --- flujo principal ---
 function CancelFlow() {
     const searchParams = useSearchParams();
-    const bookingId = searchParams.get('bookingId');
-    const token = searchParams.get('token');
+    const bookingId = searchParams.get("bookingId");
+    const token = searchParams.get("token");
 
-    // Estados para manejar el ciclo de vida de la página
-    const [validationState, setValidationState] = useState<{
-        status: 'loading' | 'success' | 'error';
-        data: BookingValidationData | null;
-        errorMessage: string | null;
-    }>({ status: 'loading', data: null, errorMessage: null });
+    const [validationState, setValidationState] = useState<ValidationState>({
+        status: "loading",
+        data: null,
+        errorMessage: null,
+    });
 
-    const [cancellationState, setCancellationState] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
+    const [cancellationState, setCancellationState] =
+        useState<CancellationState>("idle");
 
-    // 1. EFECTO PARA VALIDAR EL TOKEN AL CARGAR LA PÁGINA
+    // 1) Validar token al cargar
     useEffect(() => {
         if (!bookingId || !token) {
             setValidationState({
@@ -42,104 +60,123 @@ function CancelFlow() {
 
         (async () => {
             try {
-                const url = `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${bookingId}&token=${token}`;
+                const url = `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${encodeURIComponent(
+                    bookingId
+                )}&token=${encodeURIComponent(token)}`;
 
-                const response = await fetch(url, { cache: "no-store", signal: ac.signal });
-                const json: unknown = await response.json().catch(() => null);
+                const res = await fetch(url, { cache: "no-store", signal: ac.signal });
+                const json: unknown = await res.json().catch(() => null);
 
-                if (!response.ok) {
-                    const rec = (json && typeof json === "object") ? (json as Record<string, unknown>) : undefined;
-                    const serverMsg = (rec && typeof rec.error === "string") ? rec.error : response.statusText;
-
-                    throw new Error(serverMsg || "El enlace de cancelación no es válido o ha expirado.");
+                if (!res.ok) {
+                    const msg = pickServerError(json, res.statusText);
+                    throw new Error(
+                        msg || "El enlace de cancelación no es válido o ha expirado."
+                    );
                 }
+
+                // opcional: aquí podrías validar con zod el shape de json
                 setValidationState({
                     status: "success",
                     data: json as BookingValidationData,
                     errorMessage: null,
                 });
             } catch (err: unknown) {
-                if (ac.signal.aborted) return; // evita setear estado tras desmontar
-
+                if (ac.signal.aborted) return;
                 const message = err instanceof Error ? err.message : "Error desconocido";
-                setValidationState({ status: "error", data: null, errorMessage: message });
+                setValidationState({
+                    status: "error",
+                    data: null,
+                    errorMessage: message,
+                });
             }
         })();
 
         return () => ac.abort();
     }, [bookingId, token]);
 
-
-    // 2. FUNCIÓN PARA MANEJAR LA CONFIRMACIÓN DE CANCELACIÓN
+    // 2) Confirmar cancelación
     const handleConfirmCancellation = async () => {
         if (!bookingId || !token) return;
-
-        setCancellationState('processing');
+        setCancellationState("processing");
 
         try {
-            const response = await fetch('/api/bookings/cancel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bookingId, token }),
-            });
+            const res = await fetch(
+                "https://servermasaje-production.up.railway.app/api/bookings/cancel",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    cache: "no-store",
+                    body: JSON.stringify({ bookingId, token }),
+                }
+            );
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'No se pudo procesar la cancelación.');
+            const json: unknown = await res.json().catch(() => null);
+
+            if (!res.ok) {
+                const msg = pickServerError(json, res.statusText);
+                throw new Error(msg || "No se pudo procesar la cancelación.");
             }
 
-            setCancellationState('success');
-
-        } catch (err) {
-            setCancellationState('failed');
-            // Opcional: mostrar un mensaje de error más específico
+            setCancellationState("success");
+        } catch (err: unknown) {
+            setCancellationState("failed");
         }
     };
 
-    // --- RENDERIZADO CONDICIONAL DE LA PÁGINA ---
-
-    if (validationState.status === 'loading') {
-        return <div className="flex h-screen items-center justify-center">Verificando tu reserva...</div>;
-    }
-
-    if (validationState.status === 'error') {
-        return <div className="flex h-screen items-center justify-center text-red-600">{validationState.errorMessage}</div>;
-    }
-
-    if (cancellationState === 'success') {
+    // --- render ---
+    if (validationState.status === "loading") {
         return (
-            <div className="flex h-screen items-center justify-center text-center">
+            <div className="flex h-screen items-center justify-center">
+                Verificando tu reserva...
+            </div>
+        );
+    }
+
+    if (validationState.status === "error") {
+        return (
+            <div className="flex h-screen items-center justify-center text-red-600">
+                {validationState.errorMessage}
+            </div>
+        );
+    }
+
+    if (cancellationState === "success") {
+        return (
+            <div className="flex h-screen items-center justify-center text-center px-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-green-700">¡Reserva Cancelada!</h1>
-                    <p className="mt-2">Tu reserva ha sido cancelada exitosamente. Hemos enviado una confirmación a tu correo.</p>
+                    <h1 className="text-2xl font-bold text-green-700">
+                        ¡Reserva Cancelada!
+                    </h1>
+                    <p className="mt-2">
+                        Tu reserva ha sido cancelada exitosamente. Te enviamos una confirmación por correo.
+                    </p>
                 </div>
             </div>
         );
     }
 
-    // Si la validación fue exitosa, muestra el componente principal
-    if (validationState.status === 'success' && validationState.data) {
-        return (
-            <CancelBookingPage
-                brandName="Blessed Massage & Recovery"
-                serviceTitle={validationState.data.serviceTitle}
-                dateText={validationState.data.dateText}
-                timeText={validationState.data.timeText}
-                eligibleForRefund={validationState.data.eligibleForRefund}
-                loading={cancellationState === 'processing'}
-                onConfirm={handleConfirmCancellation}
-            // ...otros props como los colores
-            />
-        );
-    }
-
-    return null; // Fallback por si algo sale mal
+    // éxito de validación: mostrar UI de confirmación
+    return (
+        <CancelBookingPage
+            brandName="Blessed Massage & Recovery"
+            serviceTitle={validationState.data.serviceTitle}
+            dateText={validationState.data.dateText}
+            timeText={validationState.data.timeText}
+            eligibleForRefund={validationState.data.eligibleForRefund}
+            loading={cancellationState === "processing"}
+            onConfirm={handleConfirmCancellation}
+        // primaryHex / bgHex si quieres sobreescribir los colores
+        />
+    );
 }
 
-// El componente Page principal que usa Suspense
 export default function Page() {
     return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center">Cargando...</div>}>
+        <Suspense
+            fallback={
+                <div className="flex h-screen items-center justify-center">Cargando...</div>
+            }
+        >
             <CancelFlow />
         </Suspense>
     );
