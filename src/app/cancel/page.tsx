@@ -30,28 +30,48 @@ function CancelFlow() {
     // 1. EFECTO PARA VALIDAR EL TOKEN AL CARGAR LA PÁGINA
     useEffect(() => {
         if (!bookingId || !token) {
-            setValidationState({ status: 'error', data: null, errorMessage: 'Faltan parámetros en la URL.' });
+            setValidationState({
+                status: "error",
+                data: null,
+                errorMessage: "Faltan parámetros en la URL.",
+            });
             return;
         }
 
-        const validateToken = async () => {
+        const ac = new AbortController();
+
+        (async () => {
             try {
-                const response = await fetch(`https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${bookingId}&token=${token}`);
+                const url = `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${bookingId}&token=${token}`;
+
+                const response = await fetch(url, { cache: "no-store", signal: ac.signal });
+                const json = await response.json().catch(() => null);
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'El enlace de cancelación no es válido o ha expirado.');
+                    const serverMsg =
+                        json && typeof json === "object" && "error" in (json as any)
+                            ? (json as { error?: string }).error
+                            : response.statusText;
+
+                    throw new Error(
+                        serverMsg || "El enlace de cancelación no es válido o ha expirado."
+                    );
                 }
 
-                const data: BookingValidationData = await response.json();
-                setValidationState({ status: 'success', data, errorMessage: null });
+                setValidationState({
+                    status: "success",
+                    data: json as BookingValidationData,
+                    errorMessage: null,
+                });
+            } catch (err: unknown) {
+                if (ac.signal.aborted) return; // evita setear estado tras desmontar
 
-            } catch (err: any) {
-                setValidationState({ status: 'error', data: null, errorMessage: err.message });
+                const message = err instanceof Error ? err.message : "Error desconocido";
+                setValidationState({ status: "error", data: null, errorMessage: message });
             }
-        };
+        })();
 
-        validateToken();
+        return () => ac.abort();
     }, [bookingId, token]);
 
 
