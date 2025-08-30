@@ -45,19 +45,14 @@ function CancelFlow() {
                 const url = `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate?bookingId=${bookingId}&token=${token}`;
 
                 const response = await fetch(url, { cache: "no-store", signal: ac.signal });
-                const json = await response.json().catch(() => null);
+                const json: unknown = await response.json().catch(() => null);
 
                 if (!response.ok) {
-                    const serverMsg =
-                        json && typeof json === "object" && "error" in (json as any)
-                            ? (json as { error?: string }).error
-                            : response.statusText;
+                    const rec = (json && typeof json === "object") ? (json as Record<string, unknown>) : undefined;
+                    const serverMsg = (rec && typeof rec.error === "string") ? rec.error : response.statusText;
 
-                    throw new Error(
-                        serverMsg || "El enlace de cancelación no es válido o ha expirado."
-                    );
+                    throw new Error(serverMsg || "El enlace de cancelación no es válido o ha expirado.");
                 }
-
                 setValidationState({
                     status: "success",
                     data: json as BookingValidationData,
