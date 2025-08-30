@@ -1,4 +1,4 @@
-import { CancelFlow } from "@/components/Cancel-flow";
+import { CancelFlow } from "../../components/Cancel-flow"
 import { Suspense } from "react";
 
 export default function Page() {
