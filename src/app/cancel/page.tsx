@@ -1,15 +1,23 @@
-import CancelFlow from "@/components/Cancel-flow";
+// src/app/cancel/page.tsx
 import { Suspense } from "react";
+import CancelFlow from "@/components/CancelFlow";
 
-export const dynamic = "force-dynamic"; // evita SSG de "/"
+export const dynamic = "force-dynamic";
 
-export default function Page({
+type SP = { [key: string]: string | string[] | undefined };
+
+export default async function Page({
     searchParams,
 }: {
-    searchParams: { bookingId?: string; token?: string };
+    searchParams: Promise<SP>;
 }) {
-    const bookingId = searchParams?.bookingId ?? null;
-    const token = searchParams?.token ?? null;
+    const sp = await searchParams;
+
+    const bookingIdRaw = sp.bookingId;
+    const tokenRaw = sp.token;
+
+    const bookingId = Array.isArray(bookingIdRaw) ? bookingIdRaw[0] : bookingIdRaw ?? null;
+    const token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw ?? null;
 
     return (
         <Suspense fallback={<div className="flex h-screen items-center justify-center">Cargando...</div>}>
