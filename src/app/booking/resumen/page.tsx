@@ -10,10 +10,25 @@ import { loadStripe } from "@stripe/stripe-js";
 // Load Stripe only once
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
 
+// Tipos auxiliares para evitar `any`
+type ServiceWithOptionalSlug = {
+    slug?: string;
+    name: string;
+    duration: string;
+    price: string;
+    description: string;
+};
+
+type BookingApiResponse = {
+    sessionId?: string;
+    url?: string;
+    error?: string;
+    message?: string;
+};
+
 export default function BookingConfirmation() {
     const router = useRouter();
     const booking = useBookingStore((s) => s.booking);
-    const reset = useBookingStore((s) => s.reset);
     const { service, date, time } = booking;
 
     const [submitting, setSubmitting] = useState(false);
@@ -64,48 +79,60 @@ export default function BookingConfirmation() {
         setSubmitting(true);
         setErrorMsg(null);
 
-        // Normaliza fecha a "YYYY-MM-DD" (opcional: el backend acepta ISO también)
+        // Normalize date to "YYYY-MM-DD"
         const d = new Date(date);
-        const dateOnly = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const dateOnly = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+            d.getDate()
+        ).padStart(2, "0")}`;
 
-        // time debe ser array
-        const timeArr = Array.isArray(time) ? time : [time];
+        // Ensure time is an array
+        const timeArr: string[] = Array.isArray(time) ? time : [time];
 
-        // Firma base64 (solo payload, sin el prefijo data:)
+        // Signature payload (without data: prefix)
         const signatureBase64 = agreementSignatureDataURL
             ? agreementSignatureDataURL.split(",")[1]
             : undefined;
 
-        // ⚠️ Zod: service con slug | title | name
+        // Take slug safely, without `any`
+        const svc = service as unknown as ServiceWithOptionalSlug;
+
         const payload = {
             booking: {
                 service: {
-                    slug: (service as any).slug,      // ← clave para resolver en la BD
-                    name: service.name,               // por si acaso
+                    slug: svc.slug, // key for DB lookup
+                    name: service.name,
                 },
                 name: booking.name,
                 email: booking.email,
                 phone: booking.phone,
-                date: dateOnly,                     // o usa "date" tal cual si prefieres ISO
-                time: timeArr,                      // ← array
+                date: dateOnly,
+                time: timeArr,
                 agreementAccepted: !!booking.agreementAccepted,
                 signatureBase64,
                 agreementPolicyVersion: booking.agreementPolicyVersion ?? "v1.0",
                 acceptedAt: new Date().toISOString(),
-            }
+            },
         };
 
         try {
-            const res = await fetch("https://servermasaje-production.up.railway.app/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-                cache: "no-store",
-            });
+            const res = await fetch(
+                "https://servermasaje-production.up.railway.app/api/bookings",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    cache: "no-store",
+                }
+            );
 
             const text = await res.text();
-            let json: any = {};
-            try { json = JSON.parse(text); } catch { json = { raw: text }; }
+            const json: BookingApiResponse = (() => {
+                try {
+                    return JSON.parse(text) as BookingApiResponse;
+                } catch {
+                    return { message: text };
+                }
+            })();
 
             if (!res.ok) {
                 console.error("Booking API error:", json);
@@ -114,18 +141,16 @@ export default function BookingConfirmation() {
                 return;
             }
 
-            const { sessionId, url } = json;
-
-            if (sessionId) {
+            if (json.sessionId) {
                 const stripe = await stripePromise;
-                const { error } = await stripe!.redirectToCheckout({ sessionId });
+                const { error } = await stripe!.redirectToCheckout({ sessionId: json.sessionId });
                 setSubmitting(false);
                 setErrorMsg(error?.message || "Could not redirect to Stripe.");
                 return;
             }
 
-            if (url) {
-                window.location.assign(url);
+            if (json.url) {
+                window.location.assign(json.url);
                 return;
             }
 
@@ -163,7 +188,10 @@ export default function BookingConfirmation() {
                 Booking Summary
             </h1>
 
-            <ul className={`space-y-5 w-full px-2 md:px-10 ${submitting ? "pointer-events-none opacity-50" : ""}`}>
+            <ul
+                className={`space-y-5 w-full px-2 md:px-10 ${submitting ? "pointer-events-none opacity-50" : ""
+                    }`}
+            >
                 {details.map((item, index) => (
                     <li key={index} className="flex items-start gap-4">
                         <CheckIcon className="w-6 h-6 text-green-500" />
@@ -197,8 +225,6 @@ export default function BookingConfirmation() {
                         backHref="/booking/agreement"
                         showContinue
                         onContinue={handleContinue}
-                    // if you added a disabled prop to the component, you can pass it:
-                    // disabled={submitting}
                     />
                 </div>
             </div>

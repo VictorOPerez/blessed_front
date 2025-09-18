@@ -4,13 +4,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+type ValidateData = {
+    serviceTitle: string;
+    dateText: string;
+    timeText: string;
+    eligibleForRefund: boolean;
+};
+
 type Validation =
     | { status: "idle" | "loading"; data?: undefined; error?: undefined }
-    | {
-        status: "ready";
-        data: { serviceTitle: string; dateText: string; timeText: string; eligibleForRefund: boolean };
-        error?: undefined;
-    }
+    | { status: "ready"; data: ValidateData; error?: undefined }
     | { status: "error"; error: string; data?: undefined };
 
 type CancelState = "idle" | "processing" | "done" | "failed";
@@ -37,11 +40,18 @@ export default function CancelUI({
                     `https://servermasaje-production.up.railway.app/api/bookings/cancel/validate` +
                     `?bookingId=${encodeURIComponent(bookingId)}&token=${encodeURIComponent(token)}`;
                 const res = await fetch(url, { cache: "no-store" });
-                const json = await res.json();
-                if (!res.ok) throw new Error(json?.error || "El enlace no es válido o expiró.");
-                setValidation({ status: "ready", data: json });
-            } catch (e: any) {
-                setValidation({ status: "error", error: e?.message || "Error verificando la reserva." });
+
+                const json: ValidateData | { error?: string } = await res.json();
+
+                if (!res.ok) {
+                    const msg = "error" in json && json.error ? json.error : "El enlace no es válido o expiró.";
+                    throw new Error(msg);
+                }
+
+                setValidation({ status: "ready", data: json as ValidateData });
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : "Error verificando la reserva.";
+                setValidation({ status: "error", error: message });
             }
         })();
     }, [bookingId, token]);
@@ -62,10 +72,15 @@ export default function CancelUI({
                     }),
                 }
             );
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(json?.error || "No se pudo cancelar la reserva.");
+            const json: { error?: string } = await res.json().catch(() => ({} as { error?: string }));
+
+            if (!res.ok) {
+                const msg = json.error ?? "No se pudo cancelar la reserva.";
+                throw new Error(msg);
+            }
+
             setCancelState("done");
-        } catch (e) {
+        } catch (_e: unknown) {
             setCancelState("failed");
         }
     };
