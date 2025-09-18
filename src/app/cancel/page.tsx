@@ -6,12 +6,12 @@ export const dynamic = "force-dynamic";
 type SP = Record<string, string | string[] | undefined>;
 
 export default async function Page({
-  // acepta ambas: objeto o Promise del objeto
   searchParams,
 }: {
-  searchParams?: SP | Promise<SP>;
+  // 👇 coincide con lo que Next exige: Promise<any> | undefined
+  searchParams?: Promise<SP>;
 }) {
-  const sp: SP = (await Promise.resolve(searchParams)) ?? {};
+  const sp: SP = (await searchParams) ?? {};
 
   const bookingIdRaw = sp.bookingId;
   const tokenRaw = sp.token;
