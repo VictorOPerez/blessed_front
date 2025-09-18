@@ -5,7 +5,7 @@ import "./globals.css";
 import NavBar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner"
-
+import { Suspense } from "react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,12 +40,14 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased flex flex-col bg-spa text-spa`}
-      >
-        <NavBar />
-        <Toaster position="top-center" richColors />
+      >  <Suspense fallback={null}>
+          <NavBar />
+          <Toaster position="top-center" richColors />
 
-        <main className="flex-1 flex flex-col">{children}</main>
-        <Footer />
+          <main className="flex-1 flex flex-col">{children}</main>
+          <Footer />
+        </Suspense>
+
       </body>
     </html>
   );
