@@ -7,7 +7,7 @@ import { useBookingStore } from "@/stores/bookingStore";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { loadStripe } from "@stripe/stripe-js";
 
-// Carga Stripe una sola vez
+// Load Stripe only once
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
 
 export default function BookingConfirmation() {
@@ -19,17 +19,17 @@ export default function BookingConfirmation() {
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    // Redirige si faltan datos (pero no mientras enviamos)
+    // Redirect if data is missing (but not while submitting)
     useEffect(() => {
         if (!submitting && (!service || !date || !time)) {
             router.replace("/booking");
         }
     }, [service, date, time, router, submitting]);
 
-    // ⚠️ No usamos useMemo: variable simple (evita cambio de orden de hooks)
+    // ⚠️ No useMemo: simple variable (avoids hook order changes)
     const formattedDate =
         date
-            ? new Date(date).toLocaleDateString("es-ES", {
+            ? new Date(date).toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
@@ -37,27 +37,26 @@ export default function BookingConfirmation() {
             })
             : "";
 
-    // Si faltan campos, no renderizamos contenido (los hooks ya se llamaron arriba)
+    // If fields are missing, render nothing (hooks already called above)
     if (!service || !date || !time) return null;
 
     const details = [
-        { label: "Servicio", value: service.name },
-        { label: "Fecha", value: formattedDate },
-        { label: "Hora", value: time },
-        { label: "Duración", value: service.duration },
-        { label: "Precio", value: service.price },
+        { label: "Service", value: service.name },
+        { label: "Date", value: formattedDate },
+        { label: "Time", value: time },
+        { label: "Duration", value: service.duration },
+        { label: "Price", value: service.price },
     ];
 
     const handleContinue = async () => {
         const { agreementSignatureDataURL } = booking;
 
-        const signatureBase64 =
-            agreementSignatureDataURL ? agreementSignatureDataURL.split(",")[1] : undefined;
-
-
-
         if (!booking.name || !booking.email || !booking.phone) {
-            alert("Por favor completa nombre, email y teléfono.");
+            alert("Please complete your name, email, and phone.");
+            return;
+        }
+        if (!service || !date || !time) {
+            alert("Missing service/date/time.");
             return;
         }
         if (submitting) return;
@@ -65,39 +64,63 @@ export default function BookingConfirmation() {
         setSubmitting(true);
         setErrorMsg(null);
 
+        // Normaliza fecha a "YYYY-MM-DD" (opcional: el backend acepta ISO también)
+        const d = new Date(date);
+        const dateOnly = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+        // time debe ser array
+        const timeArr = Array.isArray(time) ? time : [time];
+
+        // Firma base64 (solo payload, sin el prefijo data:)
+        const signatureBase64 = agreementSignatureDataURL
+            ? agreementSignatureDataURL.split(",")[1]
+            : undefined;
+
+        // ⚠️ Zod: service con slug | title | name
+        const payload = {
+            booking: {
+                service: {
+                    slug: (service as any).slug,      // ← clave para resolver en la BD
+                    name: service.name,               // por si acaso
+                },
+                name: booking.name,
+                email: booking.email,
+                phone: booking.phone,
+                date: dateOnly,                     // o usa "date" tal cual si prefieres ISO
+                time: timeArr,                      // ← array
+                agreementAccepted: !!booking.agreementAccepted,
+                signatureBase64,
+                agreementPolicyVersion: booking.agreementPolicyVersion ?? "v1.0",
+                acceptedAt: new Date().toISOString(),
+            }
+        };
+
         try {
+            const res = await fetch("https://servermasaje-production.up.railway.app/api/bookings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                cache: "no-store",
+            });
 
-            const res = await fetch(
-                "https://servermasaje-production.up.railway.app/api/bookings",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        booking: {
-                            ...booking,
-                            signatureBase64,                           // ⬅️ lo que espera tu backend
-                            acceptedAt: new Date().toISOString(),     // ⬅️ timestamp útil
-                            // (policyVersion/hash ya van en booking si los seteaste en el paso de acuerdo)
-                        },
-                    }),
-                    cache: "no-store",
-                }
-            );
+            const text = await res.text();
+            let json: any = {};
+            try { json = JSON.parse(text); } catch { json = { raw: text }; }
 
-            const payload = await res.json();
             if (!res.ok) {
+                console.error("Booking API error:", json);
                 setSubmitting(false);
-                setErrorMsg(payload.error || "No se pudo crear la sesión de pago.");
+                setErrorMsg(json.error || json.message || "Could not create the payment session.");
                 return;
             }
 
-            const { sessionId, url } = payload;
+            const { sessionId, url } = json;
 
             if (sessionId) {
                 const stripe = await stripePromise;
                 const { error } = await stripe!.redirectToCheckout({ sessionId });
                 setSubmitting(false);
-                setErrorMsg(error?.message || "No se pudo redirigir a Stripe.");
+                setErrorMsg(error?.message || "Could not redirect to Stripe.");
                 return;
             }
 
@@ -107,38 +130,37 @@ export default function BookingConfirmation() {
             }
 
             setSubmitting(false);
-            setErrorMsg("El backend no devolvió sessionId ni url.");
+            setErrorMsg("The backend did not return a sessionId or url.");
         } catch (err) {
-            console.error("Error en handleContinue:", err);
+            console.error("Error in handleContinue:", err);
             setSubmitting(false);
-            setErrorMsg("No se pudo iniciar el pago. Inténtalo de nuevo.");
+            setErrorMsg("Payment could not be initiated. Please try again.");
         }
     };
 
     return (
-        <section className="booking-card relative   h-auto md:min-h-0 md:h-[550px] ">
+        <section className="booking-card relative h-auto md:min-h-0 md:h-[550px] ">
             {submitting && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-lg px-8 py-10 flex flex-col items-center max-w-sm w-full">
                         {/* Spinner */}
                         <div className="w-12 h-12 border-4 border-gray-200 border-t-spa-prim rounded-full animate-spin mb-6"></div>
 
-                        {/* Mensaje principal */}
+                        {/* Main message */}
                         <p className="text-lg font-semibold text-gray-800 text-center">
-                            Un momento, estamos preparando tu pago de forma segura…
+                            One moment, we’re securely preparing your payment…
                         </p>
 
-                        {/* Mensaje secundario */}
+                        {/* Secondary message */}
                         <p className="text-sm text-gray-500 text-center mt-3">
-                            No cierres esta ventana.
+                            Please don’t close this window.
                         </p>
                     </div>
                 </div>
-
             )}
 
             <h1 className="text-4xl text-center font-semibold text-spa-prim mb-6">
-                Resumen de la Reserva
+                Booking Summary
             </h1>
 
             <ul className={`space-y-5 w-full px-2 md:px-10 ${submitting ? "pointer-events-none opacity-50" : ""}`}>
@@ -147,7 +169,7 @@ export default function BookingConfirmation() {
                         <CheckIcon className="w-6 h-6 text-green-500" />
                         <div className="flex flex-col sm:flex-row sm:justify-between w-full border-b border-gray-200 pb-3">
                             <span className="font-medium">{item.label}</span>
-                            {item.label === "Hora" ? (
+                            {item.label === "Time" ? (
                                 <div className="flex gap-2">
                                     {(Array.isArray(time) ? time : [time]).map((t) => (
                                         <span key={t}>{t}</span>
@@ -175,7 +197,7 @@ export default function BookingConfirmation() {
                         backHref="/booking/agreement"
                         showContinue
                         onContinue={handleContinue}
-                    // si ya añadiste la prop disabled al componente, puedes pasarla:
+                    // if you added a disabled prop to the component, you can pass it:
                     // disabled={submitting}
                     />
                 </div>

@@ -1,23 +1,22 @@
-
 "use client";
 const steps = [
     {
         Icon: CalendarCheck,
-        title: "Reserva Eficiente (2 Minutos)",
+        title: "Efficient Booking (2 Minutes)",
         copy:
-            "Nuestro sistema de reserva online es rápido, intuitivo y seguro. Elige tu servicio y agenda tu sesión sin llamadas ni esperas, directamente desde tu móvil.",
+            "Our online booking system is fast, intuitive, and secure. Choose your service and schedule your session without calls or waiting, directly from your phone.",
     },
     {
         Icon: Bed,
-        title: "Terapia de Élite, Cero Estrés Logístico",
+        title: "Elite Therapy, Zero Logistical Stress",
         copy:
-            "Llegamos puntualmente con todo el equipo profesional: camilla de grado médico, lencería desechable y un ambiente de calma. Tú no te preocupas por nada.",
+            "We arrive on time with all the professional equipment: medical-grade table, disposable linens, and a calming atmosphere. You don’t have to worry about a thing.",
     },
     {
         Icon: TrendingUp,
-        title: "Resultados Medibles para tu Rendimiento",
+        title: "Measurable Results for Your Performance",
         copy:
-            "El objetivo es que, al terminar, sientas un alivio tangible, una mente más clara y la energía renovada. Es un 'reseteo' físico y mental para que sigas operando a tu máximo nivel.",
+            "The goal is that by the end you feel tangible relief, a clearer mind, and renewed energy. It’s a physical and mental reset so you can keep operating at your peak.",
     },
 ];
 
@@ -33,27 +32,27 @@ export default function RecoveryPlanSection() {
   relative bg-[#FFF8F2]
   px-4 sm:px-6 lg:px-8
   lg:min-h-[88svh] lg:max-h-[92svh]
-  lg:overflow-hidden               /* solo en desktop */
-  /* sin flex en mobile */
+  lg:overflow-hidden               /* desktop only */
+  /* no flex on mobile */
   lg:flex lg:justify-center lg:items-center mb-20 md:mb-0 overflow-hidden
 ">
             <div className="
     mx-auto w-full max-w-6xl
-    grid grid-cols-1 lg:grid-cols-12  /* 1 columna en mobile */
+    grid grid-cols-1 lg:grid-cols-12  /* 1 column on mobile */
     gap-8
     items-start lg:items-center
     py-10 lg:py-0
-    min-w-0                           /* evita recortes de texto */
+    min-w-0                           /* prevents text clipping */
   ">
 
-                {/* Col izquierda: título + pasos */}
+                {/* Left column: title + steps */}
                 <div className="lg:col-span-7 flex flex-col justify-center gap-8">
                     <header className="text-center lg:text-left mb-10">
                         <h2 className="font-bold text-[#275B59] leading-tight
                            text-2xl sm:text-3xl lg:text-4xl">
-                            Menos Fricción, Máximo Impacto.
+                            Less Friction, Maximum Impact.
                             <br className="hidden sm:block" />
-                            Tu Plan de Recuperación en 3 Pasos
+                            Your 3-Step Recovery Plan
                         </h2>
                     </header>
 
@@ -76,29 +75,29 @@ export default function RecoveryPlanSection() {
                     </div>
                 </div>
 
-                {/* Col derecha: stack de imágenes */}
+                {/* Right column: image stack */}
                 <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
-                    {/* Fade para mobile (mejora la lectura cuando se apila) */}
+                    {/* Fade for mobile (improves readability when stacked) */}
                     <div className="block lg:hidden absolute inset-x-0 -top-2 h-16 bg-gradient-to-b from-[#FFF8F2] to-transparent pointer-events-none z-10" />
                     <ThreeStackParallax
                         images={[
-                            { src: "/img/caricatura/top.png", alt: "Reserva confirmada" },
-                            { src: "/img/caricatura/middle.png", alt: "Terapeuta a domicilio" },
-                            { src: "/img/caricatura/bottom.png", alt: "Sesión de masaje" },
+                            { src: "/img/caricatura/top.png", alt: "Booking confirmed" },
+                            { src: "/img/caricatura/middle.png", alt: "Therapist at home" },
+                            { src: "/img/caricatura/bottom.png", alt: "Massage session" },
                         ]}
-                        // Ligeros para que quepa visualmente todo en desktop
+                        // Slight margins so everything fits visually on desktop
                         className="lg:mr-2"
                     />
                 </div>
             </div>
 
-            {/* Mobile layout tweaks: separadores suaves debajo del bloque de imágenes */}
+            {/* Mobile layout tweaks: soft spacers below the image block */}
             <div className="lg:hidden h-6" />
 
-            {/* Cards en mobile para mejor escaneo visual (opcional; ya están arriba en desktop) */}
+            {/* Mobile cards for better visual scanning (optional; already above on desktop) */}
             <div className="lg:hidden max-w-3xl mx-auto grid gap-4 pb-8">
-                {/** Si prefieres no duplicar contenido en mobile, elimina este bloque.
-            Lo dejo como mejora de legibilidad en pantallas chicas. */}
+                {/** If you’d rather not duplicate content on mobile, remove this block.
+            I left it as a readability enhancement for small screens. */}
             </div>
         </section>
     );

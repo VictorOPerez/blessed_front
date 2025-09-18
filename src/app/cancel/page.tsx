@@ -1,35 +1,27 @@
-import { Suspense } from "react";
-import CancelFlow from "@/components/CancelFlow";
+// app/cancel/page.tsx
+import CancelUI from "./ui";
 
 export const dynamic = "force-dynamic";
 
+// Tipos utilitarios
 type SP = Record<string, string | string[] | undefined>;
 type SPIn = SP | Promise<SP>;
 
-function isPromise<T>(v: unknown): v is Promise<T> {
-    return typeof (v as { then?: unknown }).then === "function";
-}
-
 export default async function Page({
-    searchParams,
+  searchParams,
 }: {
-    searchParams: SPIn;
+  searchParams: SPIn;
 }) {
-    const sp: SP = isPromise<SP>(searchParams)
-        ? await searchParams
-        : searchParams;
+  // 👇 Espera searchParams (si ya es objeto, Promise.resolve lo deja igual)
+  const sp: SP = await Promise.resolve(searchParams);
 
-    const bookingIdRaw = sp.bookingId;
-    const tokenRaw = sp.token;
+  const bookingIdRaw = sp.bookingId;
+  const tokenRaw = sp.token;
 
-    const bookingId =
-        Array.isArray(bookingIdRaw) ? bookingIdRaw[0] : bookingIdRaw ?? null;
-    const token =
-        Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw ?? null;
+  const bookingId =
+    Array.isArray(bookingIdRaw) ? bookingIdRaw[0] : bookingIdRaw ?? null;
+  const token =
+    Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw ?? null;
 
-    return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center">Cargando...</div>}>
-            <CancelFlow bookingId={bookingId} token={token} />
-        </Suspense>
-    );
+  return <CancelUI bookingId={bookingId} token={token} />;
 }

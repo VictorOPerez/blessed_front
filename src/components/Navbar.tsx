@@ -5,10 +5,10 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 
 const navItems = [
-    { label: "Inicio", href: "/" },
-    // { label: "Sobre nosotros", href: "/about" },
-    { label: "Servicios / Booking", href: "/booking", highlight: true },
-    { label: "Contacto", href: "/contact" },
+    { label: "Home", href: "/" },
+    // { label: "About us", href: "/about" },
+    { label: "Services / Booking", href: "/booking", highlight: true },
+    { label: "Contact", href: "/contact" },
 ];
 
 export default function NavBar() {
@@ -27,27 +27,24 @@ export default function NavBar() {
                         priority
                     />
 
-                    {/* MOBILE: texto simple */}
+                    {/* MOBILE: simple text */}
                     <span className="font-brand text-lg tracking-[-0.01em] font-semibold whitespace-nowrap">
                         <span className="text-[#275B59]">Blessed</span>{" "}
                         <span className="text-[#E26755]">Massage</span>
                     </span>
 
-                    {/* DESKTOP: M del monograma */}
-
+                    {/* DESKTOP: M from the monogram */}
                 </Link>
 
-
-                {/* mobile cta corto */}
+                {/* mobile short cta */}
                 <Link
                     href="/booking"
                     className="md:hidden rounded-full bg-[#E26755] text-white px-3 py-1 text-sm"
                 >
-                    Agendar
+                    Book
                 </Link>
 
-                {/* desktop cta completo */}
-
+                {/* desktop full cta */}
 
                 {/* Hamburger mobile */}
                 <button

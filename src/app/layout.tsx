@@ -23,9 +23,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Blessed Massage – Masajes Terapéuticos en Tampa",
+  title: "Blessed Massage – Therapeutic Massages in Tampa",
   description:
-    "Recupera tu rendimiento, alivia el dolor crónico y optimiza tu activo más valioso: tu tiempo.",
+    "Restore your performance, relieve chronic pain, and optimize your most valuable asset: your time.",
   icons: {
     icon: [{ url: "/favicon.ico?v=3", sizes: "any" }],
     apple: "/apple-touch-icon.png?v=3",
@@ -37,7 +37,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased flex flex-col bg-spa text-spa`}
       >

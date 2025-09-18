@@ -3,11 +3,11 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const steps = [
-    { label: "Servicio", path: "/booking" },
-    { label: "Fecha", path: "/booking/date" },
-    { label: "Tus Datos", path: "/booking/details" },
-    { label: "Pdf", path: "/booking/agreement" },
-    { label: "Resumen de reserva", path: "/booking/resumen" },
+    { label: "Service", path: "/booking" },
+    { label: "Date", path: "/booking/date" },
+    { label: "Your Info", path: "/booking/details" },
+    { label: "Agreement", path: "/booking/agreement" },
+    { label: "Booking Summary", path: "/booking/resumen" },
 ];
 
 export default function BookingStepsHeader() {
@@ -22,7 +22,7 @@ export default function BookingStepsHeader() {
 
                 return (
                     <div key={step.label} className="flex items-center gap-2">
-                        {/* Círculo con número */}
+                        {/* Number circle */}
                         <div
                             className={clsx(
                                 "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-all shrink-0",
@@ -34,7 +34,7 @@ export default function BookingStepsHeader() {
                             {index + 1}
                         </div>
 
-                        {/* Texto */}
+                        {/* Text */}
                         <span
                             className={clsx(
                                 "whitespace-nowrap transition-colors",
@@ -46,7 +46,7 @@ export default function BookingStepsHeader() {
                             {step.label}
                         </span>
 
-                        {/* Línea de conexión */}
+                        {/* Connection line */}
                         {index < steps.length - 1 && (
                             <div
                                 className={clsx(

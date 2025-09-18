@@ -10,6 +10,7 @@ const steps = [
     "/booking/agreement",// 4
     "/booking/resumen",  // 5
 ];
+
 export default function BookingNavButtons({ backHref, showContinue = false, onContinue, isAgreed = true }: {
     backHref: string;
     showContinue?: boolean;
@@ -22,29 +23,26 @@ export default function BookingNavButtons({ backHref, showContinue = false, onCo
     const setStep = useBookingStore((state) => state.setCurrentStep);
 
     return (
-        <div className=" flex justify-between items-center">
+        <div className="flex justify-between items-center">
             <button
                 onClick={() => {
                     router.push(backHref);
                     setStep(steps.indexOf(pathname));
-
                 }}
                 className="text-sm text-gray-600 underline hover:text-spa-prim cursor-pointer"
             >
-                ← Volver
+                ← Back
             </button>
 
             {showContinue && (
                 <button
                     onClick={onContinue}
                     disabled={!isAgreed}
-                    className="bg-spa-accent text-white px-5 py-2 rounded-md font-medium hover:bg-[#7EA1F4] cursor-pointer "
+                    className="bg-spa-accent text-white px-5 py-2 rounded-md font-medium hover:bg-[#7EA1F4] cursor-pointer"
                 >
                     {
-                        pathname === "/booking/resumen" ? "Pay" : "Continuar"
-
+                        pathname === "/booking/resumen" ? "Pay" : "Continue"
                     }
-
                 </button>
             )}
         </div>

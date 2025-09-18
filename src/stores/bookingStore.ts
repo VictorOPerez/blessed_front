@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type Service = {
+    slug?: string;
     name: string;
     duration: string;
     price: string;

@@ -18,19 +18,19 @@ export default function Footer() {
                 <div>
                     <h3 className="text-2xl font-extrabold tracking-wide">Blessed</h3>
                     <p className="mt-3 text-sm leading-relaxed max-w-xs">
-                        Masaje terapéutico a domicilio que convierte el autocuidado en un
-                        acelerador de tu rendimiento.
+                        At-home therapeutic massage that turns self-care into an
+                        accelerator for your performance.
                     </p>
                 </div>
 
                 {/* Navegación rápida */}
                 <nav>
-                    <h4 className="mb-3 font-semibold text-lg">Navegación</h4>
+                    <h4 className="mb-3 font-semibold text-lg">Navigation</h4>
                     <ul className="space-y-2 text-sm">
                         {[
-                            ["Inicio", "#inicio"],
+                            ["Home", "#inicio"],
                             ["Booking", "#booking"],
-                            ["Contacto", "#contacto"],
+                            ["Contact", "#contacto"],
                         ].map(([label, href]) => (
                             <li key={href}>
                                 <Link
@@ -46,7 +46,7 @@ export default function Footer() {
 
                 {/* Contacto */}
                 <div>
-                    <h4 className="mb-3 font-semibold text-lg">Contacto</h4>
+                    <h4 className="mb-3 font-semibold text-lg">Contact</h4>
                     <ul className="space-y-3 text-sm">
                         <li className="flex items-center gap-2">
                             <Phone className="w-4 h-4 text-[#FF8A7B]" />
@@ -72,7 +72,7 @@ export default function Footer() {
 
                 {/* Social / licencias */}
                 <div>
-                    <h4 className="mb-3 font-semibold text-lg">Síguenos</h4>
+                    <h4 className="mb-3 font-semibold text-lg">Follow us</h4>
                     <div className="flex gap-4 mb-6">
                         <Link
                             href="https://instagram.com/"
@@ -90,11 +90,6 @@ export default function Footer() {
                         </Link>
                     </div>
 
-                    <p className="text-xs leading-relaxed">
-                        Terapeuta Licenciado&nbsp;#MA&nbsp;XXXXX <br />
-                        © {new Date().getFullYear()} Blessed. Todos los derechos
-                        reservados.
-                    </p>
                 </div>
             </div>
 
@@ -103,7 +98,7 @@ export default function Footer() {
 
             {/* ─────────────────────────── Small print */}
             <div className="mt-6 text-center text-xs text-[#FFF8F2]/80">
-                Política de Privacidad &nbsp;|&nbsp; Términos de Servicio
+                Privacy Policy &nbsp;|&nbsp; Terms of Service
             </div>
         </footer>
     );

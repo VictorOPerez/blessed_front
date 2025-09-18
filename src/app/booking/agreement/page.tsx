@@ -7,65 +7,65 @@ import { useBookingStore } from "@/stores/bookingStore";
 import BookingNavButtons from "@/components/BookingNavButtons";
 import { toast } from "sonner";
 
-// === Config de política ===
+// === Policy config ===
 const POLICY_VERSION = "v1.0";
 
-// Texto canónico del consentimiento (ES).
+// Canonical consent text (EN).
 const POLICY_HTML = `
-  <h2 class="text-xl font-semibold mb-3">Consentimiento informado y exención de responsabilidad</h2>
-  <p class="mb-2">El masaje que recibirá tiene fines de <strong>bienestar, reducción de estrés y alivio de tensión muscular</strong>. No constituye diagnóstico ni tratamiento médico y no sustituye la atención de un profesional de la salud. Informe siempre a su terapeuta sobre <strong>condiciones médicas, cirugías, medicamentos</strong> (incluidos anticoagulantes), <strong>alergias</strong> y cualquier cambio en su estado de salud.</p>
+  <h2 class="text-xl font-semibold mb-3">Informed Consent and Liability Waiver</h2>
+  <p class="mb-2">The massage you will receive is intended for <strong>wellbeing, stress reduction, and relief of muscular tension</strong>. It does not constitute a medical diagnosis or treatment and is not a substitute for care from a healthcare professional. Always inform your therapist about any <strong>medical conditions, surgeries, medications</strong> (including blood thinners), <strong>allergies</strong>, and any change in your health status.</p>
 
-  <h3 class="font-semibold mt-4">Contraindicaciones y condiciones especiales</h3>
+  <h3 class="font-semibold mt-4">Contraindications and Special Conditions</h3>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Fiebre, infección activa, heridas abiertas, trombosis, flebitis, quemaduras o lesiones agudas.</li>
-    <li>Patologías cardiovasculares no controladas, cáncer en tratamiento, trastornos hemorrágicos o uso de anticoagulantes.</li>
-    <li>Embarazo: se requieren técnicas y posiciones específicas. Informe su estado y semanas.</li>
-    <li>Menores de edad: se requiere consentimiento del padre/madre/tutor y presencia en la instalación.</li>
+    <li>Fever, active infection, open wounds, thrombosis, phlebitis, burns, or acute injuries.</li>
+    <li>Uncontrolled cardiovascular conditions, cancer under treatment, bleeding disorders, or use of anticoagulants.</li>
+    <li>Pregnancy: specific techniques and positions are required. Please inform us of your status and weeks.</li>
+    <li>Minors: parent/guardian consent is required and presence on-site.</li>
   </ul>
 
-  <h3 class="font-semibold mt-4">Retroalimentación durante la sesión</h3>
-  <p class="mb-2">Si siente <strong>dolor, incomodidad, mareo o adormecimiento</strong>, informe inmediatamente para ajustar presión o técnica. Puede <strong>detener</strong> la sesión en cualquier momento. El terapeuta también puede finalizarla si detecta condiciones inseguras o conducta inapropiada.</p>
+  <h3 class="font-semibold mt-4">Feedback During the Session</h3>
+  <p class="mb-2">If you feel <strong>pain, discomfort, dizziness, or numbness</strong>, inform us immediately to adjust pressure or technique. You may <strong>stop</strong> the session at any time. The therapist may also end the session if unsafe conditions or inappropriate behavior are detected.</p>
 
-  <h3 class="font-semibold mt-4">Riesgos potenciales</h3>
+  <h3 class="font-semibold mt-4">Potential Risks</h3>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Molestia temporal, agujetas o rigidez.</li>
-    <li>Hematomas leves o sensibilidad localizada.</li>
-    <li>Fatiga o somnolencia posterior.</li>
+    <li>Temporary soreness, muscle achiness, or stiffness.</li>
+    <li>Mild bruising or localized tenderness.</li>
+    <li>Post-session fatigue or drowsiness.</li>
   </ul>
-  <p class="mb-2">Acepto estos riesgos inherentes y libero de responsabilidad al centro y a sus terapeutas por <em>efectos menores previsibles</em> asociados a técnicas dentro de estándares profesionales, salvo negligencia comprobada.</p>
+  <p class="mb-2">I accept these inherent risks and release the studio and its therapists from liability for <em>foreseeable minor effects</em> associated with techniques within professional standards, except in cases of proven negligence.</p>
 
-  <h3 class="font-semibold mt-4">Límites profesionales y conducta</h3>
+  <h3 class="font-semibold mt-4">Professional Boundaries and Conduct</h3>
   <ul class="list-disc pl-5 space-y-1">
-    <li>El masaje es estrictamente <strong>no sexual</strong>. Cualquier conducta inapropiada resultará en la terminación inmediata.</li>
-    <li>Se mantendrá el <strong>cubierto</strong> adecuado (drapeado) y solo se descubrirán áreas a tratar con su consentimiento.</li>
-    <li>Higiene personal y puntualidad son requeridas para una sesión segura y respetuosa.</li>
-  </ul>
-
-  <h3 class="font-semibold mt-4">Política de citas, cancelaciones y retrasos</h3>
-  <ul class="list-disc pl-5 space-y-1">
-    <li>Cancelación con <strong>≥ 24 h</strong>: sin cargo.</li>
-    <li>Cancelación con <strong>&lt; 24 h</strong>: puede aplicarse cargo hasta el <strong>50%</strong> del servicio.</li>
-    <li>La <strong>tardanza</strong> reduce proporcionalmente el tiempo de la sesión para no afectar a la siguiente persona.</li>
+    <li>The massage is strictly <strong>non-sexual</strong>. Any inappropriate conduct will result in immediate termination.</li>
+    <li>Appropriate <strong>draping</strong> will be maintained and only areas to be treated will be undraped with your consent.</li>
+    <li>Personal hygiene and punctuality are required for a safe and respectful session.</li>
   </ul>
 
-  <h3 class="font-semibold mt-4">Privacidad y datos</h3>
-  <p class="mb-2">La información proporcionada se usa para administrar su cita y personalizar el servicio. Se guardará de forma confidencial según la normativa aplicable. Puede solicitar acceso o corrección de sus datos. Autorizo el uso de mis datos de contacto para recordatorios de citas y comunicaciones relacionadas con mis reservas.</p>
+  <h3 class="font-semibold mt-4">Appointments, Cancellations, and Delays</h3>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Cancellation with <strong>≥ 24 h</strong>: no charge.</li>
+    <li>Cancellation with <strong>&lt; 24 h</strong>: a fee of up to <strong>50%</strong> of the service may apply.</li>
+    <li><strong>Lateness</strong> proportionally reduces session time to avoid impacting the next client.</li>
+  </ul>
 
-  <h3 class="font-semibold mt-4">Declaración y consentimiento</h3>
-  <p class="mb-2">Declaro que la información suministrada es veraz y que he leído y comprendido este consentimiento. He podido hacer preguntas y fueron respondidas a mi satisfacción. Comprendo que puedo revocar mi consentimiento en cualquier momento antes o durante la sesión.</p>
+  <h3 class="font-semibold mt-4">Privacy and Data</h3>
+  <p class="mb-2">The information provided is used to manage your appointment and personalize the service. It will be kept confidential according to applicable regulations. You may request access to or correction of your data. I authorize the use of my contact details for appointment reminders and communications related to my bookings.</p>
+
+  <h3 class="font-semibold mt-4">Statement and Consent</h3>
+  <p class="mb-2">I declare the information provided is truthful and that I have read and understood this consent. I have been able to ask questions and they were answered to my satisfaction. I understand that I may revoke my consent at any time before or during the session.</p>
 `;
 
-// Resumen en bullets (lo más importante)
+// Bulleted summary (most important points)
 const SUMMARY_BULLETS = [
-    "El masaje que recibirás es una terapia para la relajación y el alivio de la tensión muscular, no un tratamiento médico.",
-    "Para una sesión segura y efectiva, por favor comparte cualquier condición médica, cirugía, medicación o alergia relevante.",
-    "Si algo te incomoda durante la sesión, avísame de inmediato para ajustar la técnica. Tienes el control total y puedes detener el masaje en cualquier momento.",
-    "La sesión es de naturaleza terapéutica. Se respetarán en todo momento tus límites personales y se utilizará un drapeado adecuado para garantizar tu privacidad.",
-    "Agradecemos que nos notifiques cualquier cambio con al menos 24 horas de antelación. Las cancelaciones con poco aviso o las ausencias pueden generar cargos. Las llegadas tarde podrían acortar la duración de tu sesión.",
-    "Tus datos personales se tratan con la máxima privacidad y se utilizan únicamente para la gestión de tus citas.",
+    "The massage you will receive is for relaxation and relief of muscular tension, not a medical treatment.",
+    "For a safe and effective session, please share any relevant medical condition, surgery, medication, or allergy.",
+    "If anything feels uncomfortable during the session, tell me immediately to adjust the technique. You have full control and can stop the massage at any time.",
+    "The session is therapeutic in nature. Your personal boundaries will be respected at all times and proper draping will be used to ensure your privacy.",
+    "Please notify us of any change at least 24 hours in advance. Late cancellations or no-shows may incur fees. Late arrivals may shorten your session time.",
+    "Your personal data is handled with the utmost privacy and used only to manage your appointments.",
 ];
 
-// ===== Tipos de SignaturePad (sin any) =====
+// ===== SignaturePad types (without any) =====
 type SigData = Parameters<SignaturePad["fromData"]>[0];      // PointGroup[]
 type SignaturePadWithEvents = SignaturePad & {
     addEventListener?: (ev: "beginStroke" | "endStroke", cb: () => void) => void;
@@ -89,16 +89,16 @@ export default function ConfidentialityAgreement() {
     const padRef = useRef<SignaturePad | null>(null);
     const [sigDataURL, setSigDataURL] = useState<string | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
-    const strokesStack = useRef<SigData | null>(null); // para "undo"
+    const strokesStack = useRef<SigData | null>(null); // for "undo"
 
-    // Redirigir si falta algún paso previo
+    // Redirect if any previous step is missing
     useEffect(() => {
         if (!service || !date || !time || !name || !email) {
             router.replace("/booking");
         }
     }, [service, date, time, name, email, router]);
 
-    // Inicializar SignaturePad cuando el canvas exista (solo cliente)
+    // Initialize SignaturePad when canvas exists (client only)
     useEffect(() => {
         if (!canvasRef.current) return;
 
@@ -107,9 +107,9 @@ export default function ConfidentialityAgreement() {
         const resize = () => {
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             const width = canvas.parentElement ? canvas.parentElement.clientWidth : 600;
-            const height = 220; // alto fijo agradable
+            const height = 220; // pleasant fixed height
 
-            // Guardar firma actual antes de redimensionar
+            // Save current signature before resizing
             const prev = padRef.current && !padRef.current.isEmpty()
                 ? (padRef.current.toData() as SigData)
                 : null;
@@ -118,7 +118,7 @@ export default function ConfidentialityAgreement() {
             canvas.height = Math.floor(height * ratio);
             canvas.style.width = `${width}px`;
             canvas.style.height = `${height}px`;
-            // 🔒 Necesario en móviles para que el lienzo reciba los trazos
+            // 🔒 Needed on mobile so the canvas receives strokes
             canvas.style.touchAction = "none";
 
             const ctx = canvas.getContext("2d");
@@ -131,13 +131,13 @@ export default function ConfidentialityAgreement() {
                     penColor: "#111827",
                 });
 
-                // Handlers de eventos (compatibilidad v3/v4)
+                // Event handlers (v3/v4 compatibility)
                 const handleBegin = () => setIsDrawing(true);
                 const handleEnd = () => {
                     setIsDrawing(false);
                     if (!padRef.current) return;
                     const data = padRef.current.toData() as SigData;
-                    strokesStack.current = data; // snapshot para undo
+                    strokesStack.current = data; // snapshot for undo
                     setSigDataURL(padRef.current.isEmpty() ? null : padRef.current.toDataURL());
                 };
 
@@ -147,7 +147,7 @@ export default function ConfidentialityAgreement() {
                 padEvt.onBegin = handleBegin; // fallback v2/v3
                 padEvt.onEnd = handleEnd;
 
-                // iOS: evita que el gesto táctil haga scroll/zoom en lugar de dibujar
+                // iOS: prevent touch gestures from scrolling/zooming instead of drawing
                 canvas.addEventListener(
                     "touchstart",
                     (e) => e.preventDefault(),
@@ -159,7 +159,7 @@ export default function ConfidentialityAgreement() {
                     { passive: false }
                 );
             } else if (prev) {
-                // restaurar trazos tras el resize
+                // restore strokes after resize
                 padRef.current.clear();
                 padRef.current.fromData(prev);
             }
@@ -174,7 +174,7 @@ export default function ConfidentialityAgreement() {
         };
     }, []);
 
-    // Calcular hash (SHA-256) del HTML de la política para dejarlo listo en el store
+    // Compute hash (SHA-256) of the policy HTML to store alongside
     useEffect(() => {
         const toHex = (buf: ArrayBuffer) =>
             Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -186,7 +186,7 @@ export default function ConfidentialityAgreement() {
             if (typeof setAgreementPolicyMeta === "function") {
                 setAgreementPolicyMeta({ version: POLICY_VERSION, hash: hex });
             } else {
-                console.warn("[Consent] Falta setAgreementPolicyMeta en el store (opcional).");
+                console.warn("[Consent] Missing setAgreementPolicyMeta in store (optional).");
             }
         })();
     }, [setAgreementPolicyMeta]);
@@ -214,20 +214,20 @@ export default function ConfidentialityAgreement() {
 
     const handleContinue = () => {
         if (!agreementAccepted) {
-            toast("Debes aceptar los términos para continuar.");
+            toast("You must accept the terms to continue.");
             return;
         }
         if (!sigDataURL) {
-            toast("Por favor, firma en el recuadro para continuar.");
+            toast("Please sign in the box to continue.");
             return;
         }
         setAgreement(true);
         if (typeof setAgreementSignature === "function") {
             setAgreementSignature(sigDataURL);
         } else {
-            console.warn("[Consent] Falta setAgreementSignature en el store (opcional).");
+            console.warn("[Consent] Missing setAgreementSignature in store (optional).");
         }
-        // Paso siguiente (resumen / pago)
+        // Next step (summary / payment)
         useBookingStore.getState().setCurrentStep?.(5);
         router.push("/booking/resumen");
     };
@@ -235,17 +235,17 @@ export default function ConfidentialityAgreement() {
     if (!service || !date || !time || !name || !email) return null;
 
     return (
-        <div className="booking-card print:bg-white   h-auto ">
+        <div className="booking-card print:bg-white h-auto ">
             <div className="w-full max-w-2xl rounded-lg">
                 <main className="flex flex-col items-stretch gap-6">
-                    {/* Título */}
+                    {/* Title */}
                     <h1 className="text-3xl md:text-4xl text-center font-semibold text-spa-prim">
-                        Consentimiento informado
+                        Informed Consent
                     </h1>
 
-                    {/* RESUMEN en bullets */}
+                    {/* BULLETED SUMMARY */}
                     <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-                        <h2 className="font-semibold mb-2">Resumen (lee esto primero):</h2>
+                        <h2 className="font-semibold mb-2">Summary (read this first):</h2>
                         <ul className="list-disc pl-5 space-y-1 text-sm">
                             {SUMMARY_BULLETS.map((b, i) => (
                                 <li key={i}>{b}</li>
@@ -253,22 +253,22 @@ export default function ConfidentialityAgreement() {
                         </ul>
                     </section>
 
-                    {/* Texto completo */}
+                    {/* Full text */}
                     <section
                         className="rounded-md border border-gray-200 bg-white p-5 text-gray-700 shadow-sm print:border-0"
-                        aria-label="Términos completos del consentimiento"
+                        aria-label="Full consent terms"
                     >
                         <details className="group">
                             <summary className="cursor-pointer select-none text-base font-medium text-gray-900 focus:outline-none">
-                                Ver términos completos
-                                <span className="ml-2 text-sm text-gray-500 group-open:hidden">(clic para expandir)</span>
-                                <span className="ml-2 text-sm text-gray-500 hidden group-open:inline">(clic para contraer)</span>
+                                View full terms
+                                <span className="ml-2 text-sm text-gray-500 group-open:hidden">(click to expand)</span>
+                                <span className="ml-2 text-sm text-gray-500 hidden group-open:inline">(click to collapse)</span>
                             </summary>
                             <div className="prose prose-sm mt-3" dangerouslySetInnerHTML={{ __html: POLICY_HTML }} />
                         </details>
                     </section>
 
-                    {/* Aceptación */}
+                    {/* Acceptance */}
                     <section className="flex items-start gap-3">
                         <input
                             id="agreement-checkbox"
@@ -278,34 +278,34 @@ export default function ConfidentialityAgreement() {
                             className="mt-1 h-5 w-5 cursor-pointer rounded border-gray-300 text-[#C5A880] focus:ring-2 focus:ring-[#C5A880]/50"
                         />
                         <label htmlFor="agreement-checkbox" className="cursor-pointer select-none text-gray-800">
-                            Declaro que he leído y acepto los términos del consentimiento informado.
+                            I declare that I have read and accept the terms of the informed consent.
                         </label>
                     </section>
 
-                    {/* Firma */}
+                    {/* Signature */}
                     <section>
                         <div className="rounded-md border border-gray-300 bg-white p-3 ">
                             <div className="text-xs text-gray-500 mb-2">
-                                Nombre: <span className="font-medium">{name}</span> &nbsp;•&nbsp; Fecha: {new Date().toLocaleDateString()}
+                                Name: <span className="font-medium">{name}</span> &nbsp;•&nbsp; Date: {new Date().toLocaleDateString()}
                             </div>
                             <div className="relative">
                                 <canvas
                                     ref={canvasRef}
                                     className="w-full rounded-md border border-dashed border-gray-300 bg-gray-50"
-                                    style={{ touchAction: "none" }} // 👈 importante en móviles
+                                    style={{ touchAction: "none" }} // 👈 important on mobile
                                 />
                                 {!sigDataURL && !isDrawing && (
                                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-400">
-                                        Firme dentro del recuadro…
+                                        Please sign inside the box…
                                     </div>
                                 )}
                             </div>
                             <div className="mt-2 flex items-center gap-2">
                                 <button type="button" onClick={handleClear} className="px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50">
-                                    Limpiar
+                                    Clear
                                 </button>
                                 <button type="button" onClick={handleUndo} className="px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50">
-                                    Deshacer trazo
+                                    Undo stroke
                                 </button>
                             </div>
                         </div>
@@ -319,7 +319,7 @@ export default function ConfidentialityAgreement() {
                 </main>
             </div>
 
-            {/* Estilos de impresión mínimos */}
+            {/* Minimal print styles */}
             <style jsx global>{`
         @media print {
           .booking-card { box-shadow: none !important; }
