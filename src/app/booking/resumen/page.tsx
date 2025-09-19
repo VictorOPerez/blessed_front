@@ -113,9 +113,6 @@ export default function BookingConfirmation() {
                 acceptedAt: new Date().toISOString(),
             },
         };
-        // --- AÑADE ESTO ---
-        console.log("[PROD DEBUG] Preparando para enviar. Payload:", JSON.stringify(payload, null, 2));
-        alert("Revisa la consola antes de enviar el fetch."); // Pausa temporal para que veas el log
 
         try {
             const res = await fetch(
