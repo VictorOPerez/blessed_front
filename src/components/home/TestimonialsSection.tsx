@@ -4,6 +4,12 @@ import Stars from "../Stars";
 const testimonials = [
     {
         quote:
+            "I sit for hours and had daily lower-back pain. After two sessions I felt a difference, and now I keep it every 3–4 weeks.",
+        name: "Abram",
+        designation: "Financial consultant",
+        src: "/comentarios/Abram.jpg",
+    }, {
+        quote:
             "I booked it just to save time and was shocked how much better my back felt. Now I do it once a month and handle long computer days way better.",
         name: "Javier G.",
         designation: "Startup founder",
@@ -16,13 +22,7 @@ const testimonials = [
         designation: "Creative director",
         src: "/comentarios/sofia.jpg",
     },
-    {
-        quote:
-            "I sit for hours and had daily lower-back pain. After two sessions I felt a difference, and now I keep it every 3–4 weeks.",
-        name: "Abram",
-        designation: "Financial consultant",
-        src: "/comentarios/Abram.jpg",
-    },
+
     {
         quote:
             "I’m a physician and appreciate the clear explanations. Solid technique and careful hygiene. I recommend it to patients with neck tension.",
