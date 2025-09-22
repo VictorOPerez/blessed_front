@@ -16,7 +16,7 @@ export function CTASection() {
                     {/* Service details */}
                     <div className="text-left">
                         <h3 className="text-lg font-bold text-[#275B59] mb-4">Therapeutic Recoveries include</h3>
-                        <p className="text-sm text-[#425958] mb-2">60 or 90 Minutes · From <span className="font-semibold">$129</span></p>
+                        <p className="text-sm text-[#425958] mb-2">60 or 90 Minutes · From <span className="font-semibold">$70</span></p>
                         <p className="text-sm text-[#425958]">Includes postural assessment, personalized treatment, and self-care recommendations.</p>
                     </div>
                     {/* CTA */}
